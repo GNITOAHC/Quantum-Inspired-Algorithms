@@ -1,0 +1,32 @@
+{
+    "name": "fujitsu data",
+    "version": "1.0",
+    "config": [
+        {
+            "index": 1,
+            "spin": true,
+            "j_right": 12.0,
+            "j_bottom": 132.0,
+            "j_btm_right": 5.999,
+            "j_layer_up": 1234.2
+        },
+        {
+            "index": 2,
+            "spin": false,
+            "j_right": 0.0,
+            "j_bottom": 0.0,
+            "j_btm_right": 0.0,
+            "j_layer_up": 0.0
+        }
+    ],
+    "bond_strength": [
+        {
+            "indexes": [0, 1],
+            "strength": 12.3
+        },
+        {
+            "indexes": [1, 2],
+            "strength": 5.6
+        }
+    ]
+}
