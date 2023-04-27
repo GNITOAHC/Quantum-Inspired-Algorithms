@@ -7,7 +7,7 @@ extern crate serde;
 extern crate serde_json;
 use serde_json::Value;
 
-struct Jxx {
+pub struct Jxx {
     j: i32,  // J_{i,j} of x_i, x_j
     jl: i32, // J_{i,j} of x_i, x_j, but for layer between layer
     l: i32,  // Side length of the triangular lattice
@@ -15,53 +15,14 @@ struct Jxx {
 }
 
 #[derive(Debug)]
-enum SubLattice {
+pub enum SubLattice {
     RED,
     GREEN,
     BLUE,
 }
 
-#[allow(dead_code)]
-struct Node {
-    index: i32,              // Index of the node
-    right: i32,              // 2D index of the right node
-    bottom: i32,             // 2D index of the bottom node
-    btm_right: i32,          // 2D index of the bottom right node
-    layer_up: i32,           // 3D index of the layer up node
-    spin: bool,              // Spin of the node, true: up, false: down
-    sub_lattice: SubLattice, // Sub-lattice color of the node
-    j_right: f32,            // J_{i,j} of current node and right node
-    j_bottom: f32,           // J_{i,j} of current node and bottom node
-    j_btm_right: f32,        // J_{i,j} of current node and bottom right node
-    j_layer_up: f32,         // J_{i,j} of current node and layer up node
-}
-
-impl Node {
-    fn new(
-        index: i32,
-        right: i32,
-        bottom: i32,
-        btm_right: i32,
-        layer_up: i32,
-        sub_lattice: SubLattice,
-        jxx: &Jxx,
-    ) -> Node {
-        let j_value = jxx.j as f32; // Default J_{i,j} value
-        Node {
-            index,
-            right,
-            bottom,
-            btm_right,
-            layer_up,
-            spin: false,
-            sub_lattice,
-            j_right: j_value,
-            j_bottom: j_value,
-            j_btm_right: j_value,
-            j_layer_up: jxx.jl as f32,
-        }
-    }
-}
+mod node; // Contains the Node struct and it's implementation
+use node::Node; // Use the Node struct
 
 /* 3D Triangular Lattice
  * (h: height, i: 2D i, j: 2D j)
@@ -135,20 +96,7 @@ fn print_node_info() {
     println!("========== NODES info ==========");
     unsafe {
         for i in 0..NODES.len() {
-            println!(
-                "index: {}; right: {},{}; bottom: {},{}; btm_right: {},{}; layer_up: {},{}; spin: {}; sub_lattice: {:?};",
-                NODES[i].index,
-                NODES[i].right,
-                NODES[i].j_right,
-                NODES[i].bottom,
-                NODES[i].j_bottom,
-                NODES[i].btm_right,
-                NODES[i].j_btm_right,
-                NODES[i].layer_up,
-                NODES[i].j_layer_up,
-                NODES[i].spin,
-                NODES[i].sub_lattice,
-            );
+            NODES[i].print_info();
         }
     }
 }
