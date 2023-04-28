@@ -31,7 +31,7 @@ use node::Node; // Use the Node struct
 
 static mut NODES: Vec<Node> = Vec::new();
 
-fn create_vector(jxx: Jxx) {
+fn create_vector(jxx: &Jxx) {
     #![allow(non_snake_case)]
     let L: i32 = jxx.l; // Side length of the triangular lattice
     let H: i32 = jxx.h; // Height of the triangular lattice
@@ -92,8 +92,6 @@ fn create_vector(jxx: Jxx) {
     }
 }
 
-fn print_node_info() {
-    println!("========== NODES info ==========");
     unsafe {
         for i in 0..NODES.len() {
             NODES[i].print_info();
@@ -153,12 +151,21 @@ fn main() {
         i += 2;
     }
 
-    create_vector(jxx);
+    create_vector(&jxx);
     print_node_info();
 
     // read_json("input.json");
 
     // main_loop();
+}
+
+fn print_node_info() {
+    println!("========== NODES info ==========");
+    unsafe {
+        for i in 0..NODES.len() {
+            NODES[i].print_info();
+        }
+    }
 }
 
 #[allow(unused)]
