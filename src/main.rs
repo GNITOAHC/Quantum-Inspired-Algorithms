@@ -2,9 +2,7 @@ use serde_json;
 use serde_json::Value;
 use std::env;
 use std::fs::File;
-use std::io;
-use std::io::Read;
-use std::str::FromStr;
+use std::io::Write;
 
 pub struct Jxx {
     j: i32,  // J_{i,j} of x_i, x_j
@@ -35,6 +33,79 @@ use hamiltonian::hamiltonian_eff; // Use the hamiltonian_eff function
  */
 
 static mut NODES: Vec<Node> = Vec::new();
+
+// Main function
+fn main() {
+    let args: Vec<String> = env::args().collect(); // Get arguments
+    let (mut use_random, mut debug_output): (bool, bool) = (false, false); // Add options to the program
+
+    println!("{:?}", args);
+
+    let mut jxx = Jxx {
+        j: 1,
+        jl: 1,
+        l: 3,
+        h: 3,
+    };
+
+    let mut i = 1;
+    while i < args.len() {
+        let val = || -> i32 {
+            if i + 1 >= args.len() {
+                panic!(
+                    "Usage: {} [-J <J>] [-JL <JL>] [-L <L>] [-H <H>] [--use-random]",
+                    args[0]
+                );
+            }
+            return args[i + 1].parse().expect("Failed to parse value");
+        };
+
+        if args[i] == "-J" {
+            if val() <= 0 {
+                println!("J should be greater than 0");
+                return;
+            }
+            jxx.j = val();
+        } else if args[i] == "-JL" {
+            if val() <= 0 {
+                println!("JL should be greater than 0");
+                return;
+            }
+            jxx.jl = val();
+        } else if args[i] == "-L" {
+            if val() % 3 != 0 || val() <= 0 {
+                println!("L should be multiple of 3 and greater than 0");
+                return;
+            }
+            jxx.l = val();
+        } else if args[i] == "-H" {
+            if val() <= 0 {
+                println!("H should be greater than 0");
+                return;
+            }
+            jxx.h = val();
+        } else if args[i] == "--use-random" {
+            use_random = true;
+        } else if args[i] == "--debug-output" {
+            debug_output = true;
+        }
+
+        i += 2;
+    }
+
+    create_vector(&jxx);
+    if use_random {
+        random_strength(&jxx);
+    }
+
+    let fujitsu: Value = hamiltonian_eff(&jxx);
+    write_json("./target/output.json", &fujitsu);
+
+    if debug_output {
+        print_node_info();
+        debug_log(&fujitsu);
+    }
+}
 
 fn create_vector(jxx: &Jxx) {
     #![allow(non_snake_case)]
@@ -97,70 +168,24 @@ fn create_vector(jxx: &Jxx) {
     }
 }
 
-// Main function
-fn main() {
-    let args: Vec<String> = env::args().collect(); // Get arguments
-    let mut use_random: bool = false; // Default the program to not use the random.
-
-    println!("{:?}", args);
-
-    let mut jxx = Jxx {
-        j: 1,
-        jl: 1,
-        l: 3,
-        h: 3,
+fn write_json(file_path: &str, fujitsu: &Value) -> () {
+    let mut file = match File::create(file_path) {
+        Ok(file) => file,
+        Err(e) => {
+            panic!("Error: {}", e);
+        }
     };
 
-    let mut i = 1;
-    while i < args.len() {
-        let val = || -> i32 {
-            if i + 1 >= args.len() {
-                panic!(
-                    "Usage: {} [-J <J>] [-JL <JL>] [-L <L>] [-H <H>] [--use-random]",
-                    args[0]
-                );
-            }
-            return args[i + 1].parse().expect("Failed to parse value");
-        };
-
-        if args[i] == "-J" {
-            if val() <= 0 {
-                println!("J should be greater than 0");
-                return;
-            }
-            jxx.j = val();
-        } else if args[i] == "-JL" {
-            if val() <= 0 {
-                println!("JL should be greater than 0");
-                return;
-            }
-            jxx.jl = val();
-        } else if args[i] == "-L" {
-            if val() % 3 != 0 || val() <= 0 {
-                println!("L should be multiple of 3 and greater than 0");
-                return;
-            }
-            jxx.l = val();
-        } else if args[i] == "-H" {
-            if val() <= 0 {
-                println!("H should be greater than 0");
-                return;
-            }
-            jxx.h = val();
-        } else if args[i] == "--use-random" {
-            use_random = true;
+    let formatted_data = match serde_json::to_string_pretty(&fujitsu) {
+        Ok(data) => data,
+        Err(e) => {
+            panic!("Error: {}", e);
         }
+    };
 
-        i += 2;
+    if let Err(e) = file.write_all(formatted_data.as_bytes()) {
+        panic!("Error: {}", e);
     }
-
-    create_vector(&jxx);
-    if use_random {
-        random_strength(&jxx);
-    }
-
-    let fujitsu: Value = hamiltonian_eff(&jxx);
-
 }
 
 fn print_node_info() {
@@ -172,103 +197,11 @@ fn print_node_info() {
     }
 }
 
-#[allow(unused)]
-fn read_json(file_path: &str) {
-    // Open the file in read-only mode.
-    let mut file: File = match File::open(file_path) {
-        Ok(file) => file,
-        Err(error) => {
-            panic!("Problem opening the file: {:?}", error);
-        }
-    };
-
-    let mut contents = String::new();
-    if let Err(error) = file.read_to_string(&mut contents) {
-        panic!("Problem reading the file: {:?}", error);
+fn debug_log(fujitsu: &Value) {
+    println!("========== DEBUG LOG ==========");
+    let term_list = fujitsu["binary_polynomial"]["terms"].as_array().unwrap();
+    for term in term_list {
+        println!("cof: {}, poly: {}", term["coefficient"], term["polynomial"])
     }
-
-    // Desirialize the JSON string into Value.
-    let json: Value = match serde_json::from_str(&contents) {
-        Ok(json) => json,
-        Err(error) => {
-            panic!("Problem parsing the file: {:?}", error);
-        }
-    };
-
-    // Get the name and config from json
-    let name = json.get("name").and_then(Value::as_str);
-    let config = json.get("config").and_then(Value::as_array);
-
-    // Extract the data from json
-    match name {
-        Some(value) => println!("name: {}", value),
-        None => println!("name is not found"),
-    }
-    match config {
-        Some(values) => {
-            for config_item in values {
-                let index = config_item.get("index").and_then(Value::as_i64);
-                let spin = config_item.get("spin").and_then(Value::as_bool);
-                let j_right = config_item.get("j_right").and_then(Value::as_f64);
-                let j_bottom = config_item.get("j_bottom").and_then(Value::as_f64);
-                let j_btm_right = config_item.get("j_btm_right").and_then(Value::as_f64);
-                let j_layer_up = config_item.get("j_layer_up").and_then(Value::as_f64);
-                println!("index: {:?}", index);
-                match (index, spin, j_right, j_bottom, j_btm_right, j_layer_up) {
-                    (Some(idx), Some(spn), Some(jr), Some(jb), Some(jbr), Some(jlu)) => {
-                        println!(
-                            "index: {}, spin: {}, j_right: {}, j_bottom: {}, j_btm_right: {}, j_layer_up: {}",
-                            idx, spn, jr, jb, jbr, jlu
-                        );
-                        unsafe {
-                            let idx = idx as usize;
-                            NODES[idx].spin = spn;
-                            NODES[idx].j_right = jr as f64;
-                            NODES[idx].j_bottom = jb as f64;
-                            NODES[idx].j_btm_right = jbr as f64;
-                            NODES[idx].j_layer_up = jlu as f64;
-                        }
-                        print_node_info();
-                    }
-                    _ => println!("Invalid config item found"),
-                }
-            }
-        }
-        None => println!("config is not found"),
-    }
-    return;
-}
-
-#[allow(unused)]
-fn parse_input<T: FromStr>(input: &str) -> T {
-    input
-        .parse()
-        .unwrap_or_else(|_| panic!("Failed to parse input"))
-}
-
-#[allow(unused)]
-fn main_loop() {
-    loop {
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read line");
-
-        // Parse the input
-        let inputs: Vec<_> = input.split_whitespace().collect();
-
-        // Extract the parsed inputs
-        // let i: i32 = parse_input(&inputs[0]);
-        // let f1: i32 = parse_input(&inputs[1]);
-        // let f2: f64 = parse_input(&inputs[2]);
-        let (front, back, strength): (i32, i32, f64) = (
-            parse_input(&inputs[0]),
-            parse_input(&inputs[1]),
-            parse_input(&inputs[2]),
-        );
-
-        println!("{} {} {}", front, back, strength);
-
-        break;
-    }
+    println!();
 }
