@@ -124,10 +124,10 @@ fn random_strength(jxx: &Jxx) {
         }
     }
 
-
     unsafe {
         // Set the nodes' strength to the random values (For the other layers)
-        for h in 1..H { // Set from height == 1
+        for h in 1..H {
+            // Set from height == 1
             let (mut ndx, mut idx): (usize, usize) = (0, 0);
             loop {
                 if ndx >= L2 as usize {
@@ -151,6 +151,7 @@ fn random_strength(jxx: &Jxx) {
 // Main function
 fn main() {
     let args: Vec<String> = env::args().collect(); // Get arguments
+    let mut use_random: bool = false; // Default the program to not use the random.
 
     println!("{:?}", args);
 
@@ -163,50 +164,55 @@ fn main() {
 
     let mut i = 1;
     while i < args.len() {
-        if i + 1 >= args.len() {
-            println!("Please enter value after parameter");
-            println!("Usage: {} -J <J> -JL <JL> -L <L> -H <H>", args[0]);
-            return;
-        }
-
-        let value = args[i + 1].parse().expect("Failed to parse value"); // Set the value of the parameter
+        let val = || -> i32 {
+            if i + 1 >= args.len() {
+                panic!(
+                    "Usage: {} [-J <J>] [-JL <JL>] [-L <L>] [-H <H>] [--use-random]",
+                    args[0]
+                );
+            }
+            return args[i + 1].parse().expect("Failed to parse value");
+        };
 
         if args[i] == "-J" {
-            if value <= 0 {
+            if val() <= 0 {
                 println!("J should be greater than 0");
                 return;
             }
-            jxx.j = value;
+            jxx.j = val();
         } else if args[i] == "-JL" {
-            if value <= 0 {
+            if val() <= 0 {
                 println!("JL should be greater than 0");
                 return;
             }
-            jxx.jl = value;
+            jxx.jl = val();
         } else if args[i] == "-L" {
-            if value % 3 != 0 || value <= 0 {
+            if val() % 3 != 0 || val() <= 0 {
                 println!("L should be multiple of 3 and greater than 0");
                 return;
             }
-            jxx.l = value;
+            jxx.l = val();
         } else if args[i] == "-H" {
-            if value <= 0 {
+            if val() <= 0 {
                 println!("H should be greater than 0");
                 return;
             }
-            jxx.h = value;
+            jxx.h = val();
+        } else if args[i] == "--use-random" {
+            use_random = true;
         }
 
         i += 2;
     }
 
     create_vector(&jxx);
-    print_node_info();
+    if use_random {
+        random_strength(&jxx);
+    }
+    // print_node_info();
 
     // read_json("input.json");
 
-    random_strength(&jxx);
-    // main_loop();
 }
 
 fn print_node_info() {
