@@ -1,11 +1,10 @@
+use serde_json;
+use serde_json::Value;
 use std::env;
 use std::fs::File;
 use std::io;
 use std::io::Read;
 use std::str::FromStr;
-extern crate serde;
-extern crate serde_json;
-use serde_json::Value;
 
 pub struct Jxx {
     j: i32,  // J_{i,j} of x_i, x_j
@@ -26,6 +25,9 @@ use node::Node; // Use the Node struct
 
 mod random; // Get the random number
 use random::random_strength; // Use the random_strength function
+
+mod hamiltonian; // Contains the hamiltonian_eff function
+use hamiltonian::hamiltonian_eff; // Use the hamiltonian_eff function
 
 /* 3D Triangular Lattice
  * (h: height, i: 2D i, j: 2D j)
@@ -156,9 +158,8 @@ fn main() {
     if use_random {
         random_strength(&jxx);
     }
-    // print_node_info();
 
-    // read_json("input.json");
+    let fujitsu: Value = hamiltonian_eff(&jxx);
 
 }
 
