@@ -53,7 +53,7 @@ fn main() {
         let val = || -> i32 {
             if i + 1 >= args.len() {
                 panic!(
-                    "Usage: {} [-J <J>] [-JL <JL>] [-L <L>] [-H <H>] [--use-random]",
+                    "Usage: {} [-J <J>] [-JL <JL>] [-L <L>] [-H <H>] [--use-random] [--debug-output]",
                     args[0]
                 );
             }
