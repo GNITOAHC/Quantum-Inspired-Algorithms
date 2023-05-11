@@ -5,8 +5,8 @@ use std::fs::File;
 use std::io::Write;
 
 pub struct Jxx {
-    j: i32,  // J_{i,j} of x_i, x_j
-    jl: i32, // J_{i,j} of x_i, x_j, but for layer between layer
+    j: f64,  // J_{i,j} of x_i, x_j
+    jl: f64, // J_{i,j} of x_i, x_j, but for layer between layer
     l: i32,  // Side length of the triangular lattice
     h: i32,  // Height of the triangular lattice
 }
@@ -42,15 +42,15 @@ fn main() {
     println!("{:?}", args);
 
     let mut jxx = Jxx {
-        j: 1,
-        jl: 1,
+        j: 1.0,
+        jl: 1.0,
         l: 3,
         h: 3,
     };
 
     let mut i = 1;
     while i < args.len() {
-        let val = || -> i32 {
+        let val = || -> f64 {
             if i + 1 >= args.len() {
                 panic!(
                     "Usage: {} [-J <J>] [-JL <JL>] [-L <L>] [-H <H>] [--use-random] [--debug-output]",
@@ -61,29 +61,29 @@ fn main() {
         };
 
         if args[i] == "-J" {
-            if val() <= 0 {
+            if val() <= 0.0 {
                 println!("J should be greater than 0");
                 return;
             }
             jxx.j = val();
         } else if args[i] == "-JL" {
-            if val() <= 0 {
+            if val() <= 0.0 {
                 println!("JL should be greater than 0");
                 return;
             }
             jxx.jl = val();
         } else if args[i] == "-L" {
-            if val() % 3 != 0 || val() <= 0 {
+            if val() as i32 % 3 != 0 || val() as i32 <= 0 {
                 println!("L should be multiple of 3 and greater than 0");
                 return;
             }
-            jxx.l = val();
+            jxx.l = val() as i32;
         } else if args[i] == "-H" {
-            if val() <= 0 {
+            if val() as i32 <= 0 {
                 println!("H should be greater than 0");
                 return;
             }
-            jxx.h = val();
+            jxx.h = val() as i32;
         } else if args[i] == "--use-random" {
             use_random = true;
         } else if args[i] == "--debug-output" {
