@@ -53,7 +53,7 @@ fn main() {
         let val = || -> f64 {
             if i + 1 >= args.len() {
                 panic!(
-                    "Usage: {} [-J <J>] [-JL <JL>] [-L <L>] [-H <H>] [--use-random] [--debug-output]",
+                    "Usage: {} [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output]",
                     args[0]
                 );
             }
@@ -66,12 +66,14 @@ fn main() {
                 return;
             }
             jxx.j = val();
-        } else if args[i] == "-JL" {
-            if val() <= 0.0 {
-                println!("JL should be greater than 0");
-                return;
+        } else if args[i] == "-Gamma" {
+            let gamma: f64 = val();
+            if  val() == 0.0 {
+                jxx.jl = 0.0;
+            } else {
+                let jl: f64 = -(0.5) * gamma.tanh().ln();
+                jxx.jl = (jl * 1000.0).round() / 1000.0; // Three decimal places
             }
-            jxx.jl = val();
         } else if args[i] == "-L" {
             if val() as i32 % 3 != 0 || val() as i32 <= 0 {
                 println!("L should be multiple of 3 and greater than 0");
