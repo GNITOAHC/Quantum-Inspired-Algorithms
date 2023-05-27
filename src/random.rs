@@ -1,7 +1,6 @@
 use rand::prelude::*;
 use crate::Jxx;
 use crate::NODES;
-use crate::print_node_info;
 
 fn get_random(max: f64) -> f64 {
     let mut rng = thread_rng();
@@ -28,7 +27,7 @@ pub fn random_strength(jxx: &Jxx) {
             if ndx >= L2 as usize {
                 break;
             }
-            println!("idx = {}", idx);
+            // println!("ndx: {}", ndx);
             NODES[ndx].j_right = rand_array[idx];
             NODES[ndx].j_bottom = rand_array[idx + 1];
             NODES[ndx].j_btm_right = rand_array[idx + 2];
@@ -58,6 +57,6 @@ pub fn random_strength(jxx: &Jxx) {
         }
     }
 
-    print_node_info();
+    // print_node_info();
     return;
 }
