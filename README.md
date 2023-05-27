@@ -30,13 +30,14 @@ $ . \target\debug\fujitsu.exe # Running on Windows
 ## Options
 
 ```shell
-# Usage: target/debug/fujitsu [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output]
+# Usage: target/debug/fujitsu [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output] [--without-cycle]
 # J : Default strength for all pairs of x_i & x_j
 # Gamma: Gamma will be calculated to default strength between layers
 # L : Side length of this triangular lattice
 # H : Height of this triangular lattice
 # use-random : Use random strength between nodes
 # debug-output : Log the nodes info and contents of output.json
+# without-cycle : Generate triangular lattice without cycle
 
 $ cargo run -- -J 1 -Gamma 1 -H 2 -L 3 --debug-output
 ```
