@@ -50,49 +50,53 @@ fn main() {
 
     let mut i = 1;
     while i < args.len() {
-        let val = || -> f64 {
-            if i + 1 >= args.len() {
+        let val = |i: &mut usize| -> f64 {
+            *i += 1;
+            if *i >= args.len() {
                 panic!(
                     "Usage: {} [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output]",
                     args[0]
                 );
             }
-            return args[i + 1].parse().expect("Failed to parse value");
+            return args[*i].parse().expect("Failed to parse value");
         };
 
         if args[i] == "-J" {
-            if val() <= 0.0 {
+            let val = val(&mut i);
+            if val <= 0.0 {
                 println!("J should be greater than 0");
                 return;
             }
-            jxx.j = val();
+            jxx.j = val;
         } else if args[i] == "-Gamma" {
-            let gamma: f64 = val();
-            if  val() == 0.0 {
+            let gamma: f64 = val(&mut i);
+            if gamma == 0.0 {
                 jxx.jl = 0.0;
             } else {
                 let jl: f64 = -(0.5) * gamma.tanh().ln();
                 jxx.jl = (jl * 1000.0).round() / 1000.0; // Three decimal places
             }
         } else if args[i] == "-L" {
-            if val() as i32 % 3 != 0 || val() as i32 <= 0 {
+            let val: i32 = val(&mut i) as i32;
+            if val % 3 != 0 || val <= 0 {
                 println!("L should be multiple of 3 and greater than 0");
                 return;
             }
-            jxx.l = val() as i32;
+            jxx.l = val;
         } else if args[i] == "-H" {
-            if val() as i32 <= 0 {
+            let val = val(&mut i) as i32;
+            if val <= 0 {
                 println!("H should be greater than 0");
                 return;
             }
-            jxx.h = val() as i32;
+            jxx.h = val;
         } else if args[i] == "--use-random" {
             use_random = true;
         } else if args[i] == "--debug-output" {
             debug_output = true;
         }
 
-        i += 2;
+        i += 1;
     }
 
     create_vector(&jxx);
