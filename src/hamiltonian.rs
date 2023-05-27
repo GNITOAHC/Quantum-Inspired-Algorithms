@@ -3,6 +3,13 @@ use crate::NODES;
 use serde_json::{json, Map, Value};
 use std::convert::TryFrom;
 
+// Check direction of the nodes
+enum Direction {
+    Right,
+    Bottom,
+    BtmRight,
+}
+
 // Make new object for the fujitsu input json
 fn new_obj(cof: f64, vec: Vec<i32>) -> Map<String, Value> {
     let mut obj = Map::new();
@@ -16,7 +23,7 @@ fn new_obj(cof: f64, vec: Vec<i32>) -> Map<String, Value> {
 }
 
 // Get the front part of the Hamiltonian function
-fn get_front(i: i32, h: i32, jxx: &Jxx) -> Vec<(f64, Vec<i32>)> {
+fn get_front(i: i32, h: i32, jxx: &Jxx, without_cycle: bool) -> Vec<(f64, Vec<i32>)> {
     #![allow(non_snake_case)]
     let L2: i32 = jxx.l * jxx.l; // L^2
     let idx: usize = usize::try_from((h * L2) + i).unwrap();
@@ -31,29 +38,42 @@ fn get_front(i: i32, h: i32, jxx: &Jxx) -> Vec<(f64, Vec<i32>)> {
         let (btm_right_idx, btm_right_j): (usize, f64) =
             (NODES[idx].btm_right as usize, NODES[idx].j_btm_right);
 
-        // k: strengh between two nodes
-        // polynomial: 4k s_{i, n} s_{j, n} - 2k s_{i, n} - 2k s_{j, n} + k
-        outer_vec.push((4.0 * right_j, vec![idx as i32, right_idx as i32]));
-        outer_vec.push((4.0 * bottom_j, vec![idx as i32, bottom_idx as i32]));
-        outer_vec.push((4.0 * btm_right_j, vec![idx as i32, btm_right_idx as i32]));
-        outer_vec.push((-2.0 * right_j, vec![right_idx as i32]));
-        outer_vec.push((-2.0 * bottom_j, vec![bottom_idx as i32]));
-        outer_vec.push((-2.0 * btm_right_j, vec![btm_right_idx as i32]));
+        let iter_vec: Vec<(usize, f64, Direction)> = vec![
+            (right_idx, right_j, Direction::Right),
+            (bottom_idx, bottom_j, Direction::Bottom),
+            (btm_right_idx, btm_right_j, Direction::BtmRight),
+        ];
 
-        let outer_strength: f64 = right_j + bottom_j + btm_right_j;
-        // outer_vec.push((-2.0 * outer_strength, vec![idx as i32])); // Combine all the outer terms
-        outer_vec.push((-2.0 * right_j, vec![idx as i32]));
-        outer_vec.push((-2.0 * bottom_j, vec![idx as i32]));
-        outer_vec.push((-2.0 * btm_right_j, vec![idx as i32]));
+        // Drop the variables
+        drop(right_idx);
+        drop(right_j);
+        drop(bottom_idx);
+        drop(bottom_j);
+        drop(btm_right_idx);
+        drop(btm_right_j);
 
-        outer_vec.push((outer_strength, vec![-1])); // Constant term (With right, bottom, btm_right)
+        for iter in iter_vec {
+            let (iter_idx, iter_j, direction) = iter;
+
+            // k: strength between two nodes (iter_j)
+            // polynomial: 4k s_{i, n} s_{j, n} - 2k s_{i, n} - 2k s_{j, n} + k
+            if without_cycle && is_cycle(idx, iter_idx, jxx.l, direction) {
+                // check cycle
+                continue;
+            } else {
+                outer_vec.push((4.0 * iter_j, vec![idx as i32, iter_idx as i32])); // 4k s_{i, n} s_{j, n}
+                outer_vec.push((-2.0 * iter_j, vec![idx as i32])); // -2k s_{i, n}
+                outer_vec.push((-2.0 * iter_j, vec![iter_idx as i32])); // -2k s_{j, n}
+                outer_vec.push((iter_j, vec![-1])); // k (Constant term)
+            }
+        }
     }
 
     outer_vec
 }
 
 // Get the back part of the Hamiltonian function
-fn get_back(idx: i32) -> Vec<(f64, Vec<i32>)> {
+fn get_back(idx: i32, without_cycle: bool) -> Vec<(f64, Vec<i32>)> {
     let mut outer_vec: Vec<(f64, Vec<i32>)> = Vec::new();
 
     unsafe {
@@ -72,7 +92,14 @@ fn get_back(idx: i32) -> Vec<(f64, Vec<i32>)> {
             outer_vec.push((0.0 - cof2k, vec![next_idx]));
             outer_vec.push((0.0 - cof_constant, vec![-1]));
 
+            // Check if the next loop will reach the cycle
+            if without_cycle && next_idx - 1 == idx {
+                // When next_idx - 1 == idx, it means that next loop will reach the cycle
+                break;
+            }
+
             if next_idx == idx {
+                // When next_idx == idx, it means that we have reached a cycle
                 break;
             }
 
@@ -84,7 +111,7 @@ fn get_back(idx: i32) -> Vec<(f64, Vec<i32>)> {
     outer_vec
 }
 
-pub fn hamiltonian_eff(jxx: &Jxx) -> Value {
+pub fn hamiltonian_eff(jxx: &Jxx, without_cycle: bool) -> Value {
     // H_{eff} = \sum{K s_{i, n} s_{j, n}} - \sum{K' s_{i, n} s_{i, n+1}}
     // sum1 -> i, j is a pair and n is the idx of layer; sum2 -> i is the idx of layer.
     #![allow(non_snake_case)]
@@ -106,7 +133,7 @@ pub fn hamiltonian_eff(jxx: &Jxx) -> Value {
 
     for h in 0..height {
         for i in 0..L2 {
-            let iter: Vec<(f64, Vec<i32>)> = get_front(i, h, jxx);
+            let iter: Vec<(f64, Vec<i32>)> = get_front(i, h, jxx, without_cycle);
             for it in iter {
                 // it.0: coefficient, it.1: polynomial
                 term_list.push(Value::Object(new_obj(it.0, it.1)));
@@ -122,7 +149,7 @@ pub fn hamiltonian_eff(jxx: &Jxx) -> Value {
     }
 
     for i in 0..L2 {
-        let iter: Vec<(f64, Vec<i32>)> = get_back(i);
+        let iter: Vec<(f64, Vec<i32>)> = get_back(i, without_cycle);
         for it in iter {
             // it.0: coefficient, it.1: polynomial
             term_list.push(Value::Object(new_obj(it.0, it.1)));
@@ -132,4 +159,26 @@ pub fn hamiltonian_eff(jxx: &Jxx) -> Value {
     // println!("{:#}", fujitsu);
 
     fujitsu
+}
+
+// Check if the 2 nodes reach the cycle (without_cycle = true) (for the front part of the Hamiltonian function)
+fn is_cycle(idx: usize, iter_idx: usize, side_length: i32, direction: Direction) -> bool {
+    match direction {
+        Direction::Right => {
+            if iter_idx < idx {
+                return true;
+            }
+        }
+        Direction::Bottom => {
+            if iter_idx != idx + side_length as usize {
+                return true;
+            }
+        }
+        Direction::BtmRight => {
+            if iter_idx != idx + side_length as usize + 1 {
+                return true;
+            }
+        }
+    }
+    return false;
 }

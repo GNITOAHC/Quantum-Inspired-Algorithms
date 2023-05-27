@@ -37,7 +37,8 @@ static mut NODES: Vec<Node> = Vec::new();
 // Main function
 fn main() {
     let args: Vec<String> = env::args().collect(); // Get arguments
-    let (mut use_random, mut debug_output): (bool, bool) = (false, false); // Add options to the program
+    let (mut use_random, mut debug_output, mut without_cycle): (bool, bool, bool) =
+        (false, false, false); // Add options to the program
 
     println!("{:?}", args);
 
@@ -54,7 +55,7 @@ fn main() {
             *i += 1;
             if *i >= args.len() {
                 panic!(
-                    "Usage: {} [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output]",
+                    "Usage: {} [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output] [--without-cycle]",
                     args[0]
                 );
             }
@@ -94,6 +95,8 @@ fn main() {
             use_random = true;
         } else if args[i] == "--debug-output" {
             debug_output = true;
+        } else if args[i] == "--without-cycle" {
+            without_cycle = true;
         }
 
         i += 1;
@@ -104,7 +107,7 @@ fn main() {
         random_strength(&jxx);
     }
 
-    let fujitsu: Value = hamiltonian_eff(&jxx);
+    let fujitsu: Value = hamiltonian_eff(&jxx, without_cycle);
     write_json("./target/output.json", &fujitsu);
 
     if debug_output {
