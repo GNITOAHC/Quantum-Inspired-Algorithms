@@ -42,7 +42,7 @@ $ . \target\debug\fujitsu.exe # Running on Windows
 $ cargo run -- -J 1 -Gamma 1 -H 2 -L 3 --debug-output
 ```
 
-# Calculation Concepts
+## Calculation Concepts
 
 Hamiltonian function:
 
@@ -61,3 +61,26 @@ x = \frac{\sigma + 1}{2} \in \{0, 1\}
 $$
 
 From $k(2x_i - 1)(2x_j - 1)$, we get $4kx_ix_j - 2kx_i - 2kx_j + k$.
+
+## API Usage
+
+Please check if there exists a `.env` file in `./api` and `FUJITSU_API_KEY` is set.
+
+```dosini
+# /api/.env
+FUJITSU_API_KEY=<YOUR_API_KEY>
+```
+
+```shell
+# Usage: sh compile [-hlspd] [job_id]
+# -h | --help   Show api.sh usage
+# -l | --list   List all jobs
+# -s | --status Show status of current job (Must provide job_id)
+# -p | --post   Post the question and json inside ./target/output.json to Fujitsu api and retrieve job id
+# -d | --delete Delete the job (Must provide job_id)
+
+sh api.sh --list # List all jobs
+```
+
+> **IMPORTANT**  
+> Please run from `/api` directory
