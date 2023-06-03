@@ -18,7 +18,7 @@ fn new_obj(cof: f64, vec: Vec<i32>) -> Map<String, Value> {
         // Constant term
         return obj;
     }
-    obj.insert("polynomial".to_string(), json!(vec));
+    obj.insert("polynomials".to_string(), json!(vec));
     return obj;
 }
 
