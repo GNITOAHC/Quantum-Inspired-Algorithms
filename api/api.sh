@@ -25,7 +25,7 @@ BASE_URL="https://api.aispf.global.fujitsu.com"
 # curl -H 'X-Api-Key:<API_KEY>' -H 'Accept: application/json' -H 'Content-type: application/json' -X DELETE <BASE_URL>/da/v3/async/jobs/result/<JOB_ID>
 
 USAGE="
-Usage: sh compile.sh [-hlspd] [job_id]\n
+Usage: sh api.sh [-hlspd] [job_id]\n
 \n
 Options:\n
     \t-h, --help      \tshow this help message and exit\n
@@ -78,7 +78,7 @@ elif [ $cmd = "status" ]; then
     check_job
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp > ../target/result_$JOB_ID.json
 elif [ $cmd = "post" ]; then
-    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X POST -d @../target/output.json $BASE_URL/da/v3/async/qubo/solve | json_pp
+    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X POST -d @../target/input.json $BASE_URL/da/v3/async/qubo/solve | json_pp
 elif [ $cmd = "delete" ]; then
     check_job
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X DELETE $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp

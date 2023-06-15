@@ -108,7 +108,7 @@ fn main() {
     }
 
     let fujitsu: Value = hamiltonian_eff(&jxx, without_cycle);
-    write_json("./target/output.json", &fujitsu);
+    write_json("./target/input.json", &fujitsu);
 
     if debug_output {
         print_node_info();
