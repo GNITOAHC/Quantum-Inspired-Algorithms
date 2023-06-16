@@ -1,5 +1,5 @@
 use serde_json;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::env;
 use std::fs::File;
 use std::io::Write;
@@ -39,6 +39,7 @@ fn main() {
     let args: Vec<String> = env::args().collect(); // Get arguments
     let (mut use_random, mut debug_output, mut without_cycle): (bool, bool, bool) =
         (false, false, false); // Add options to the program
+    let mut gamma: f64 = 1.0; // Gamma of the Hamiltonian (pass to metadata later)
 
     println!("{:?}", args);
 
@@ -70,7 +71,7 @@ fn main() {
             }
             jxx.j = val;
         } else if args[i] == "-Gamma" {
-            let gamma: f64 = val(&mut i);
+            gamma = val(&mut i);
             if gamma == 0.0 {
                 jxx.jl = 0.0;
             } else {
@@ -109,6 +110,7 @@ fn main() {
 
     let fujitsu: Value = hamiltonian_eff(&jxx, without_cycle);
     write_json("./target/input.json", &fujitsu);
+    metadata("./target/metadata.json", &jxx, gamma);
 
     if debug_output {
         print_node_info();
@@ -186,6 +188,35 @@ fn write_json(file_path: &str, fujitsu: &Value) -> () {
     };
 
     let formatted_data = match serde_json::to_string_pretty(&fujitsu) {
+        Ok(data) => data,
+        Err(e) => {
+            panic!("Error: {}", e);
+        }
+    };
+
+    if let Err(e) = file.write_all(formatted_data.as_bytes()) {
+        panic!("Error: {}", e);
+    }
+}
+
+fn metadata(file_path: &str, jxx: &Jxx, gamma: f64) -> () {
+    let mut file = match File::create(file_path) {
+        Ok(file) => file,
+        Err(e) => {
+            panic!("Error: {}", e);
+        }
+    };
+
+    let mut meta = json!({});
+
+    let data = meta.as_object_mut().unwrap();
+    data.insert("Strength".to_string(), Value::from(jxx.j));
+    data.insert("Layer_strength".to_string(), Value::from(jxx.jl));
+    data.insert("Side_length".to_string(), Value::from(jxx.l));
+    data.insert("Height".to_string(), Value::from(jxx.h));
+    data.insert("Gamma".to_string(), Value::from(gamma));
+
+    let formatted_data = match serde_json::to_string_pretty(&meta) {
         Ok(data) => data,
         Err(e) => {
             panic!("Error: {}", e);
