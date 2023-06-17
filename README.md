@@ -76,7 +76,8 @@ FUJITSU_API_KEY=<YOUR_API_KEY>
 # -h | --help   Show api.sh usage
 # -l | --list   List all jobs
 # -s | --status Show status of current job (Must provide job_id)
-# -p | --post   Post the question and json inside ./target/output.json to Fujitsu api and retrieve job id
+# -g | --get    Save the status of current to ./target/result_lattice_metadata.json
+# -p | --post   Post the question and json inside ./target/input.json to Fujitsu api and retrieve job id
 # -d | --delete Delete the job (Must provide job_id)
 
 sh api.sh --list # List all jobs

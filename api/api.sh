@@ -35,6 +35,7 @@ Options:\n
     \t-h, --help      \tshow this help message and exit\n
     \t-l, --list      \tlist all jobs\n
     \t-s, --status    \tshow job status [jobs_id]\n
+    \t-g, --get       \tget and save job result [jobs_id]\n
     \t-p, --post      \tregister qubo optimization jobs\n
     \t-d, --delete    \tdelete job [jobs_id]\n
 "
