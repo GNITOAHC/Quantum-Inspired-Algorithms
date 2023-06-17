@@ -53,6 +53,10 @@ while [[ $# -gt 0 ]]; do
             cmd="status"
             shift
             ;;
+        -g|--get)
+            cmd="get"
+            shift
+            ;;
         -p|--post)
             cmd="post"
             shift
@@ -76,11 +80,29 @@ check_job() {
     fi
 }
 
+get_meta() {
+    Gamma=`python3 ./get_meta.py Gamma`
+    Strength=`python3 ./get_meta.py Strength`
+    Height=`python3 ./get_meta.py Height`
+    Side_length=`python3 ./get_meta.py Side_length`
+    echo "Please ensure that this job_id is corresponding to the following parameters: "
+    echo "Gamma: $Gamma\n Strength: $Strength\n Height: $Height\n Side_length: $Side_length\n"
+    echo "[y/n]: " && read ans
+    if [ $ans = "n" ]; then
+        echo "Please set job_id again"
+        exit 1
+    fi
+    METADATA="Gamma${Gamma}_Strength${Strength}_Lattice${Side_length}*${Side_length}*${Height}"
+}
+
 if [ $cmd = "list" ]; then
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs | json_pp
 elif [ $cmd = "status" ]; then
     check_job
-    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp > ../target/result_$JOB_ID.json
+    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp
+elif [ $cmd = "get" ]; then
+    check_job && get_meta
+    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp > ../target/result_$METADATA.json
 elif [ $cmd = "post" ]; then
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X POST -d @../target/input.json $BASE_URL/da/v3/async/qubo/solve | json_pp
 elif [ $cmd = "delete" ]; then
