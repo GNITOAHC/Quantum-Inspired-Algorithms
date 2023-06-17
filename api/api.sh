@@ -3,8 +3,12 @@
 #   This script is for Fujitsu Digital Annealer API
 
 # API='X-Api-Key:<API_KEY>'
-if [ -f .env ]; then
+if [ -f .env ]; then # Check .env file
     FUJITSU_API_KEY=`cat .env | grep FUJITSU_API_KEY | cut -d '=' -f 2`
+    if [ -z $FUJITSU_API_KEY ]; then # Check FUJITSU_API_KEY in .env file
+        echo "Please set FUJITSU_API_KEY in .env file" && exit 1
+        exit 1
+    fi
 else
     echo "Please set FUJITSU_API_KEY in .env file"
     exit 1
