@@ -93,7 +93,7 @@ get_meta() {
         echo "Please set job_id again"
         exit 1
     fi
-    METADATA="Gamma${Gamma}_Strength${Strength}_Lattice${Side_length}*${Side_length}*${Height}"
+    METADATA="Gamma${Gamma}_Strength${Strength}_Lattice${Side_length}_${Side_length}_${Height}"
 }
 
 if [ $cmd = "list" ]; then
