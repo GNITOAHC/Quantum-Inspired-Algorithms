@@ -87,7 +87,7 @@ fn get_back(idx: i32, without_cycle: bool) -> Vec<(f64, Vec<i32>)> {
             let cof_constant: f64 = j_layer_up;
 
             // Add negative sign to the coefficient (0.0 - cof)
-            outer_vec.push((0.0 - cof4k, vec![cur_idx, cur_idx]));
+            outer_vec.push((0.0 - cof4k, vec![cur_idx, next_idx]));
             outer_vec.push((0.0 - cof2k, vec![cur_idx]));
             outer_vec.push((0.0 - cof2k, vec![next_idx]));
             outer_vec.push((0.0 - cof_constant, vec![-1]));
