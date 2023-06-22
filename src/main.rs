@@ -40,6 +40,7 @@ fn main() {
     let (mut use_random, mut debug_output, mut without_cycle): (bool, bool, bool) =
         (false, false, false); // Add options to the program
     let mut gamma: f64 = 1.0; // Gamma of the Hamiltonian (pass to metadata later)
+    const TEN_DECIMAL_PLACES: f64 = 100000.0 * 100000.0; // Ten decimal places
 
     println!("{:?}", args);
 
@@ -76,7 +77,7 @@ fn main() {
                 jxx.jl = 0.0;
             } else {
                 let jl: f64 = -(0.5) * gamma.tanh().ln();
-                jxx.jl = (jl * 1000.0).round() / 1000.0; // Three decimal places
+                jxx.jl = (jl * TEN_DECIMAL_PLACES).round() / TEN_DECIMAL_PLACES; // Ten decimal places
             }
         } else if args[i] == "-L" {
             let val: i32 = val(&mut i) as i32;
