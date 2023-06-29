@@ -86,14 +86,15 @@ get_meta() {
     Strength=`python3 ./get_meta.py Strength`
     Height=`python3 ./get_meta.py Height`
     Side_length=`python3 ./get_meta.py Side_length`
+    Time_limit_sec=`python3 ./get_meta.py Time_limit_sec`
     echo "Please ensure that this job_id is corresponding to the following parameters: "
-    echo "Gamma: $Gamma\n Strength: $Strength\n Height: $Height\n Side_length: $Side_length\n"
+    echo "Gamma: $Gamma\n Strength: $Strength\n Height: $Height\n Side_length: $Side_length\n Time_limit_sec: $Time_limit_sec\n"
     echo "[y/n]: " && read ans
     if [ $ans = "n" ]; then
         echo "Please set job_id again"
         exit 1
     fi
-    METADATA="Gamma${Gamma}_Strength${Strength}_Lattice${Side_length}_${Side_length}_${Height}"
+    METADATA="Gamma${Gamma}_Strength${Strength}_Lattice${Side_length}_${Side_length}_${Height}_Time${Time_limit_sec}"
 }
 
 if [ $cmd = "list" ]; then

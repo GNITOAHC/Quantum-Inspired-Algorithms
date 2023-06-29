@@ -41,6 +41,7 @@ fn main() {
         (false, false, false); // Add options to the program
     let mut gamma: f64 = 1.0; // Gamma of the Hamiltonian (pass to metadata later)
     const TEN_DECIMAL_PLACES: f64 = 100000.0 * 100000.0; // Ten decimal places
+    let mut time_limit_sec: Option<i64> = None; // Fujitsu request format (Default: 10, Min: 1, Max: 1800)
 
     println!("{:?}", args);
 
@@ -57,7 +58,7 @@ fn main() {
             *i += 1;
             if *i >= args.len() {
                 panic!(
-                    "Usage: {} [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output] [--without-cycle]",
+                    "Usage: {} [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [-T <T>] [--use-random] [--debug-output] [--without-cycle]",
                     args[0]
                 );
             }
@@ -77,7 +78,8 @@ fn main() {
                 jxx.jl = 0.0;
             } else {
                 let jl: f64 = -(0.5) * gamma.tanh().ln();
-                jxx.jl = (jl * TEN_DECIMAL_PLACES).round() / TEN_DECIMAL_PLACES; // Ten decimal places
+                // Ten decimal places
+                jxx.jl = (jl * TEN_DECIMAL_PLACES).round() / TEN_DECIMAL_PLACES;
             }
         } else if args[i] == "-L" {
             let val: i32 = val(&mut i) as i32;
@@ -93,6 +95,13 @@ fn main() {
                 return;
             }
             jxx.h = val;
+        } else if args[i] == "-T" {
+            let val = val(&mut i) as i64;
+            if val < 1 || val > 1800 {
+                println!("T should be between 1 and 1800");
+                return;
+            }
+            time_limit_sec = Some(val);
         } else if args[i] == "--use-random" {
             use_random = true;
         } else if args[i] == "--debug-output" {
@@ -109,9 +118,10 @@ fn main() {
         random_strength(&jxx);
     }
 
-    let fujitsu: Value = hamiltonian_eff(&jxx, without_cycle);
+    let mut fujitsu: Value = hamiltonian_eff(&jxx, without_cycle);
+    write_request_format(&mut fujitsu, time_limit_sec);
     write_json("./target/input.json", &fujitsu);
-    metadata("./target/metadata.json", &jxx, gamma);
+    metadata("./target/metadata.json", &jxx, gamma, time_limit_sec);
 
     if debug_output {
         print_node_info();
@@ -180,6 +190,13 @@ fn create_vector(jxx: &Jxx) {
     }
 }
 
+fn write_request_format(fujitsu: &mut Value, time_limit_sec: Option<i64>) -> () {
+    let da3 = fujitsu["fujitsuDA3"].as_object_mut().unwrap();
+    if let Some(time_limit_sec) = time_limit_sec {
+        da3.insert("time_limit_sec".to_string(), Value::from(time_limit_sec));
+    }
+}
+
 fn write_json(file_path: &str, fujitsu: &Value) -> () {
     let mut file = match File::create(file_path) {
         Ok(file) => file,
@@ -200,7 +217,7 @@ fn write_json(file_path: &str, fujitsu: &Value) -> () {
     }
 }
 
-fn metadata(file_path: &str, jxx: &Jxx, gamma: f64) -> () {
+fn metadata(file_path: &str, jxx: &Jxx, gamma: f64, time_limit_sec: Option<i64>) -> () {
     let mut file = match File::create(file_path) {
         Ok(file) => file,
         Err(e) => {
@@ -216,6 +233,13 @@ fn metadata(file_path: &str, jxx: &Jxx, gamma: f64) -> () {
     data.insert("Side_length".to_string(), Value::from(jxx.l));
     data.insert("Height".to_string(), Value::from(jxx.h));
     data.insert("Gamma".to_string(), Value::from(gamma));
+
+    if let Some(time_limit_sec) = time_limit_sec {
+        // If time_limit_sec is not None
+        data.insert("Time_limit_sec".to_string(), Value::from(time_limit_sec));
+    } else {
+        data.insert("Time_limit_sec".to_string(), Value::from(10));
+    }
 
     let formatted_data = match serde_json::to_string_pretty(&meta) {
         Ok(data) => data,
