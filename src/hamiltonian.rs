@@ -1,6 +1,7 @@
 use crate::Jxx;
 use crate::NODES;
 use serde_json::{json, Map, Value};
+use std::collections::HashMap;
 use std::convert::TryFrom;
 
 // Check direction of the nodes
@@ -11,7 +12,7 @@ enum Direction {
 }
 
 // Make new object for the fujitsu input json
-fn new_obj(cof: f64, vec: Vec<i32>) -> Map<String, Value> {
+fn new_obj(cof: f64, vec: &Vec<i32>) -> Map<String, Value> {
     let mut obj = Map::new();
     obj.insert("coefficient".to_string(), json!(cof));
     if vec.len() == 1 && vec[0] == -1 {
@@ -129,34 +130,66 @@ pub fn hamiltonian_eff(jxx: &Jxx, without_cycle: bool) -> Value {
         .as_array_mut()
         .unwrap();
 
-    // println!("========== HAMILTONIAN ==========");
+    // Build map for term consolidation
+    let mut term_map: HashMap<Vec<i32>, f64> = HashMap::new();
+    let mut constant_term: f64 = 0.0;
 
     for h in 0..height {
         for i in 0..L2 {
             let iter: Vec<(f64, Vec<i32>)> = get_front(i, h, jxx, without_cycle);
-            for it in iter {
-                // it.0: coefficient, it.1: polynomial
-                term_list.push(Value::Object(new_obj(it.0, it.1)));
+            for mut it in iter {
+                it.1.sort();
+                // it.0: f64 = coefficient, it.1: Vec<i32> = polynomial
+                if it.1.len() == 1 && it.1[0] == -1 {
+                    // constant term
+                    constant_term += it.0;
+                } else {
+                    // term_map.insert(it.1, it.0);
+                    if let Some((_k, v)) = term_map.get_key_value(&it.1) {
+                        term_map.insert(it.1, v + it.0);
+                    } else {
+                        term_map.insert(it.1, it.0);
+                    }
+                }
             }
         }
     }
 
-    // println!("{:#}", fujitsu);
-
     if height == 1 {
-        // println!("{:#}", fujitsu);
+        for (k, v) in term_map.iter() {
+            term_list.push(Value::Object(new_obj(*v, k)));
+        }
+        if constant_term != 0.0 {
+            term_list.push(Value::Object(new_obj(constant_term, &vec![-1])));
+        }
         return fujitsu;
     }
 
     for i in 0..L2 {
         let iter: Vec<(f64, Vec<i32>)> = get_back(i, without_cycle);
-        for it in iter {
-            // it.0: coefficient, it.1: polynomial
-            term_list.push(Value::Object(new_obj(it.0, it.1)));
+        for mut it in iter {
+            it.1.sort();
+            // it.0: f64 = coefficient, it.1: Vec<i32> = polynomial
+            if it.1.len() == 1 && it.1[0] == -1 {
+                // constant term
+                constant_term += it.0;
+            } else {
+                // term_map.insert(it.1, it.0);
+                if let Some((_k, v)) = term_map.get_key_value(&it.1) {
+                    term_map.insert(it.1, v + it.0);
+                } else {
+                    term_map.insert(it.1, it.0);
+                }
+            }
         }
     }
 
-    // println!("{:#}", fujitsu);
+    for (k, v) in term_map.iter() {
+        term_list.push(Value::Object(new_obj(*v, k)));
+    }
+    if constant_term != 0.0 {
+        term_list.push(Value::Object(new_obj(constant_term, &vec![-1])));
+    }
 
     fujitsu
 }

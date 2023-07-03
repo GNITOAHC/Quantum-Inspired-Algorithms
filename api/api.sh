@@ -101,7 +101,7 @@ if [ $cmd = "list" ]; then
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs | json_pp
 elif [ $cmd = "status" ]; then
     check_job
-    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp
+    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp | grep "status"
 elif [ $cmd = "get" ]; then
     check_job && get_meta
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp > ../target/result_$METADATA.json
@@ -109,7 +109,7 @@ elif [ $cmd = "post" ]; then
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X POST -d @../target/input.json $BASE_URL/da/v3/async/qubo/solve | json_pp
 elif [ $cmd = "delete" ]; then
     check_job
-    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X DELETE $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp
+    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X DELETE $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp | grep "status"
 else
     echo "invalid command"
 fi
