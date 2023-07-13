@@ -266,7 +266,7 @@ fn debug_log(fujitsu: &Value) {
     println!("========== DEBUG LOG ==========");
     let term_list = fujitsu["binary_polynomial"]["terms"].as_array().unwrap();
     for term in term_list {
-        println!("cof: {}, poly: {}", term["coefficient"], term["polynomial"])
+        println!("cof: {}, poly: {}", term["c"], term["p"])
     }
     println!();
 }

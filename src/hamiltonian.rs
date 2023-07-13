@@ -14,12 +14,12 @@ enum Direction {
 // Make new object for the fujitsu input json
 fn new_obj(cof: f64, vec: &Vec<i32>) -> Map<String, Value> {
     let mut obj = Map::new();
-    obj.insert("coefficient".to_string(), json!(cof));
+    obj.insert("c".to_string(), json!(cof));
     if vec.len() == 1 && vec[0] == -1 {
         // Constant term
         return obj;
     }
-    obj.insert("polynomials".to_string(), json!(vec));
+    obj.insert("p".to_string(), json!(vec));
     return obj;
 }
 
