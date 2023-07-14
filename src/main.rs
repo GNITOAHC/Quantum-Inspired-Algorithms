@@ -46,10 +46,10 @@ fn main() {
     println!("{:?}", args);
 
     let mut jxx = Jxx {
-        j: 1.0,
-        jl: 1.0,
-        l: 3,
-        h: 3,
+        j: 1.0,  // J_{i,j} of x_i, x_j
+        jl: 1.0, // J_{i,j} of x_i, x_j, but for layer between layer
+        l: 3,    // Side length of the triangular lattice
+        h: 3,    // Height of the triangular lattice
     };
 
     let mut i = 1;
@@ -111,6 +111,13 @@ fn main() {
         }
 
         i += 1;
+    }
+
+    if gamma == 0.0 || jxx.h == 1 {
+        // If Gamma equals 0, height should be 1 (If height is 1, Gamma should be 0)
+        gamma = 0.0;
+        jxx.jl = 0.0;
+        jxx.h = 1;
     }
 
     create_vector(&jxx);
