@@ -30,7 +30,7 @@ $ . \target\debug\fujitsu.exe # Running on Windows
 ## Options
 
 ```shell
-# Usage: target/debug/fujitsu [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output] [--without-cycle]
+# Usage: target/debug/fujitsu [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output] [--without-cycle] [--help]
 # J : Default strength for all pairs of x_i & x_j
 # Gamma: Gamma will be calculated to default strength between layers
 # L : Side length of this triangular lattice
@@ -38,6 +38,7 @@ $ . \target\debug\fujitsu.exe # Running on Windows
 # use-random : Use random strength between nodes
 # debug-output : Log the nodes info and contents of output.json
 # without-cycle : Generate triangular lattice without cycle
+# help: List the available arguments
 
 $ cargo run -- -J 1 -Gamma 1 -H 2 -L 3 --debug-output
 ```
@@ -64,7 +65,7 @@ From $k(2x_i - 1)(2x_j - 1)$, we get $4kx_ix_j - 2kx_i - 2kx_j + k$.
 
 ## API Usage
 
-Please check if there exists a `.env` file in `./api` and `FUJITSU_API_KEY` is set.
+Post request or get result from Fujitsu API. (File path `./api/`) Please check if there exists a `.env` file in `./api` and `FUJITSU_API_KEY` is set.
 
 ```dosini
 # /api/.env
@@ -76,7 +77,7 @@ FUJITSU_API_KEY=<YOUR_API_KEY>
 # -h | --help   Show api.sh usage
 # -l | --list   List all jobs
 # -s | --status Show status of current job (Must provide job_id)
-# -g | --get    Save the status of current to ./target/result_lattice_metadata.json
+# -g | --get    Save the status of current to ./target/Gamma<value>/<metadata>.json
 # -p | --post   Post the question and json inside ./target/input.json to Fujitsu api and retrieve job id
 # -d | --delete Delete the job (Must provide job_id)
 
@@ -85,3 +86,18 @@ sh api.sh --list # List all jobs
 
 > **IMPORTANT**  
 > Please run from `/api` directory
+
+## Config Usage
+
+Analysis the results retrieve from Fujitsu API. (File path `./config/`)
+
+```shell
+# Generate the data file for analysis.
+sh config.sh ../target/Gamma0.0/Strength1.0_Lattice18_18_1_Time600.json
+
+# Plot the data from specific datafile. (Run the above command to generate the datafile)
+sh config.sh ../target/Gamma0.0/1.0_18_18_1.txt
+```
+
+> **IMPORTANT**  
+> Please run from `/config` directory
