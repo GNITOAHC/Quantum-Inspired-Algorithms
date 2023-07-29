@@ -94,7 +94,7 @@ get_meta() {
         echo "Please set job_id again"
         exit 1
     fi
-    METADATA="Gamma${Gamma}_Strength${Strength}_Lattice${Side_length}_${Side_length}_${Height}_Time${Time_limit_sec}"
+    METADATA="Strength${Strength}_Lattice${Side_length}_${Side_length}_${Height}_Time${Time_limit_sec}"
 }
 
 if [ $cmd = "list" ]; then
@@ -104,7 +104,8 @@ elif [ $cmd = "status" ]; then
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp | grep "status"
 elif [ $cmd = "get" ]; then
     check_job && get_meta
-    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp > ../target/result_$METADATA.json
+    mkdir -p ../target/Gamma${Gamma} # Create directory if not exist
+    curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X GET $BASE_URL/da/v3/async/jobs/result/$JOB_ID | json_pp > ../target/Gamma${Gamma}/${METADATA}.json
 elif [ $cmd = "post" ]; then
     curl -H $API -H $ACCEPT -H $CONTENT_TYPE -X POST -d @../target/input.json $BASE_URL/da/v3/async/qubo/solve | json_pp
 elif [ $cmd = "delete" ]; then
