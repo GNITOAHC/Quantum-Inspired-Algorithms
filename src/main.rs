@@ -206,10 +206,10 @@ fn write_request_format(fujitsu: &mut Value, time_limit_sec: Option<i64>) -> () 
     let da3 = fujitsu["fujitsuDA3"].as_object_mut().unwrap();
     if let Some(time_limit_sec) = time_limit_sec {
         da3.insert("time_limit_sec".to_string(), Value::from(time_limit_sec));
-        da3.insert("gs_level".to_string(), Value::from(100));
-        da3.insert("gs_cutoff".to_string(), Value::from(100000));
-        da3.insert("num_output_solution".to_string(), Value::from(1024));
     }
+    da3.insert("gs_level".to_string(), Value::from(100));
+    da3.insert("gs_cutoff".to_string(), Value::from(100000));
+    da3.insert("num_output_solution".to_string(), Value::from(1024));
 }
 
 fn write_json(file_path: &str, fujitsu: &Value) -> () {
