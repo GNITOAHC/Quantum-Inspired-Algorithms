@@ -27,6 +27,9 @@ use random::random_strength; // Use the random_strength function
 mod hamiltonian; // Contains the hamiltonian_eff function
 use hamiltonian::hamiltonian_eff; // Use the hamiltonian_eff function
 
+mod gamma_analysis; // Contains the analysis function
+use gamma_analysis::analysis; // Use the analysis function
+
 /* 3D Triangular Lattice
  * (h: height, i: 2D i, j: 2D j)
  * current index: (h * L^2) + (i * L) + (j)
@@ -45,6 +48,13 @@ fn main() {
 
     println!("{:?}", args);
 
+    let usage = r"
+        Usage 1 : Generate Gamma analysis data file
+            cargo run -- --gamma-analysis <path/to/GammaX.X/StrengthX_LatticeX_X_X_TimeX.json> 
+        Usage 2 : Generate input file for Fujitsu
+            cargo run -- [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [-T <T>] [--use-random] [--debug-output] [--without-cycle] 
+    ";
+
     let mut jxx = Jxx {
         j: 1.0,  // J_{i,j} of x_i, x_j
         jl: 1.0, // J_{i,j} of x_i, x_j, but for layer between layer
@@ -52,15 +62,24 @@ fn main() {
         h: 3,    // Height of the triangular lattice
     };
 
+    // Check if arguments are for generting Gamma analysis data file
+    // args ex: ["target/debug/fujitsu", "--gamma-analysis", "target/Gamma0.0/Strength1.0_Lattice12_12_1_Time10.json"]
+    if args.len() == 3 && args[1] == "--gamma-analysis" {
+        analysis(args[2].clone());
+        return;
+    } else if args[1] == "--gamma-analysis" {
+        println!("Please specify the path to the Gamma analysis data file");
+        println!("{}", usage);
+        return;
+    }
+
+    // Generate input file for Fujitsu
     let mut i = 1;
     while i < args.len() {
         let val = |i: &mut usize| -> f64 {
             *i += 1;
             if *i >= args.len() {
-                panic!(
-                    "Usage: {} [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [-T <T>] [--use-random] [--debug-output] [--without-cycle]",
-                    args[0]
-                );
+                panic!("{}", usage);
             }
             return args[*i].parse().expect("Failed to parse value");
         };
@@ -109,9 +128,10 @@ fn main() {
         } else if args[i] == "--without-cycle" {
             without_cycle = true;
         } else if args[i] == "--help" {
-            println!(
-                "cargo run -- [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [-T <T>] [--use-random] [--debug-output] [--without-cycle]"
-            );
+            println!("{}", usage);
+            return;
+        } else {
+            println!("Invalid argument: {}", args[i]);
             return;
         }
 
