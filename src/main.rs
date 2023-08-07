@@ -1,14 +1,15 @@
 use serde_json;
 use serde_json::{json, Value};
-use std::env;
 use std::fs::File;
 use std::io::Write;
 
+#[derive(Debug)]
 pub struct Jxx {
-    j: f64,  // J_{i,j} of x_i, x_j
-    jl: f64, // J_{i,j} of x_i, x_j, but for layer between layer
-    l: i32,  // Side length of the triangular lattice
-    h: i32,  // Height of the triangular lattice
+    j: f64,     // J_{i,j} of x_i, x_j
+    jl: f64,    // J_{i,j} of x_i, x_j, but for layer between layer
+    l: i32,     // Side length of the triangular lattice
+    h: i32,     // Height of the triangular lattice
+    gamma: f64, // Gamma of the Hamiltonian
 }
 
 #[derive(Debug)]
@@ -30,6 +31,8 @@ use hamiltonian::hamiltonian_eff; // Use the hamiltonian_eff function
 mod gamma_analysis; // Contains the analysis function
 use gamma_analysis::analysis; // Use the analysis function
 
+mod args; // Contains the Options struct
+
 /* 3D Triangular Lattice
  * (h: height, i: 2D i, j: 2D j)
  * current index: (h * L^2) + (i * L) + (j)
@@ -39,108 +42,39 @@ static mut NODES: Vec<Node> = Vec::new();
 
 // Main function
 fn main() {
-    let args: Vec<String> = env::args().collect(); // Get arguments
-    let (mut use_random, mut debug_output, mut without_cycle): (bool, bool, bool) =
-        (false, false, false); // Add options to the program
-    let mut gamma: f64 = 1.0; // Gamma of the Hamiltonian (pass to metadata later)
-    const TEN_DECIMAL_PLACES: f64 = 100000.0 * 100000.0; // Ten decimal places
-    let mut time_limit_sec: Option<i64> = None; // Fujitsu request format (Default: 10, Min: 1, Max: 1800)
-
-    println!("{:?}", args);
-
-    let usage = r"
-        Usage 1 : Generate Gamma analysis data file
-            cargo run -- --gamma-analysis <path/to/GammaX.X/StrengthX_LatticeX_X_X_TimeX.json> 
-        Usage 2 : Generate input file for Fujitsu
-            cargo run -- [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [-T <T>] [--use-random] [--debug-output] [--without-cycle] 
-    ";
-
-    let mut jxx = Jxx {
-        j: 1.0,  // J_{i,j} of x_i, x_j
-        jl: 1.0, // J_{i,j} of x_i, x_j, but for layer between layer
-        l: 3,    // Side length of the triangular lattice
-        h: 3,    // Height of the triangular lattice
-    };
+    let options = args::get_options();
 
     // Check if arguments are for generting Gamma analysis data file
     // args ex: ["target/debug/fujitsu", "--gamma-analysis", "target/Gamma0.0/Strength1.0_Lattice12_12_1_Time10.json"]
-    if args.len() == 3 && args[1] == "--gamma-analysis" {
-        analysis(args[2].clone());
-        return;
-    } else if args[1] == "--gamma-analysis" {
-        println!("Please specify the path to the Gamma analysis data file");
-        println!("{}", usage);
-        return;
-    }
-
-    // Generate input file for Fujitsu
-    let mut i = 1;
-    while i < args.len() {
-        let val = |i: &mut usize| -> f64 {
-            *i += 1;
-            if *i >= args.len() {
-                panic!("{}", usage);
-            }
-            return args[*i].parse().expect("Failed to parse value");
-        };
-
-        if args[i] == "-J" {
-            let val = val(&mut i);
-            if val <= 0.0 {
-                println!("J should be greater than 0");
-                return;
-            }
-            jxx.j = val;
-        } else if args[i] == "-Gamma" {
-            gamma = val(&mut i);
-            if gamma == 0.0 {
-                jxx.jl = 0.0;
-            } else {
-                let jl: f64 = -(0.5) * gamma.tanh().ln();
-                // Ten decimal places
-                jxx.jl = (jl * TEN_DECIMAL_PLACES).round() / TEN_DECIMAL_PLACES;
-            }
-        } else if args[i] == "-L" {
-            let val: i32 = val(&mut i) as i32;
-            if val % 3 != 0 || val <= 0 {
-                println!("L should be multiple of 3 and greater than 0");
-                return;
-            }
-            jxx.l = val;
-        } else if args[i] == "-H" {
-            let val = val(&mut i) as i32;
-            if val <= 0 {
-                println!("H should be greater than 0");
-                return;
-            }
-            jxx.h = val;
-        } else if args[i] == "-T" {
-            let val = val(&mut i) as i64;
-            if val < 1 || val > 1800 {
-                println!("T should be between 1 and 1800");
-                return;
-            }
-            time_limit_sec = Some(val);
-        } else if args[i] == "--use-random" {
-            use_random = true;
-        } else if args[i] == "--debug-output" {
-            debug_output = true;
-        } else if args[i] == "--without-cycle" {
-            without_cycle = true;
-        } else if args[i] == "--help" {
-            println!("{}", usage);
-            return;
-        } else {
-            println!("Invalid argument: {}", args[i]);
+    match &options.file_path {
+        Some(file_path) => {
+            analysis(file_path.clone());
             return;
         }
-
-        i += 1;
+        None => {}
     }
 
-    if gamma == 0.0 || jxx.h == 1 {
+    let time_limit_sec = options.T;
+    let (use_random, debug_output, without_cycle): (bool, bool, bool) = (
+        options.use_random,
+        options.debug_output,
+        options.without_cycle,
+    ); // Add options to the program
+
+    let mut jxx = Jxx {
+        j: 1.0,     // J_{i,j} of x_i, x_j
+        jl: 1.0,    // J_{i,j} of x_i, x_j, but for layer between layer
+        l: 3,       // Side length of the triangular lattice
+        h: 3,       // Height of the triangular lattice
+        gamma: 0.2, // Gamma of the Hamiltonian
+    };
+
+    args::get_jxx(&mut jxx, options);
+    println!("{:#?}", jxx);
+
+    if jxx.gamma == 0.0 || jxx.h == 1 {
         // If Gamma equals 0, height should be 1 (If height is 1, Gamma should be 0)
-        gamma = 0.0;
+        jxx.gamma = 0.0;
         jxx.jl = 0.0;
         jxx.h = 1;
     }
@@ -153,7 +87,7 @@ fn main() {
     let mut fujitsu: Value = hamiltonian_eff(&jxx, without_cycle);
     write_request_format(&mut fujitsu, time_limit_sec);
     write_json("./target/input.json", &fujitsu);
-    metadata("./target/metadata.json", &jxx, gamma, time_limit_sec);
+    metadata("./target/metadata.json", &jxx, jxx.gamma, time_limit_sec);
 
     if debug_output {
         print_node_info();
@@ -222,7 +156,7 @@ fn create_vector(jxx: &Jxx) {
     }
 }
 
-fn write_request_format(fujitsu: &mut Value, time_limit_sec: Option<i64>) -> () {
+fn write_request_format(fujitsu: &mut Value, time_limit_sec: Option<i32>) -> () {
     let da3 = fujitsu["fujitsuDA3"].as_object_mut().unwrap();
     if let Some(time_limit_sec) = time_limit_sec {
         da3.insert("time_limit_sec".to_string(), Value::from(time_limit_sec));
@@ -252,7 +186,7 @@ fn write_json(file_path: &str, fujitsu: &Value) -> () {
     }
 }
 
-fn metadata(file_path: &str, jxx: &Jxx, gamma: f64, time_limit_sec: Option<i64>) -> () {
+fn metadata(file_path: &str, jxx: &Jxx, gamma: f64, time_limit_sec: Option<i32>) -> () {
     let mut file = match File::create(file_path) {
         Ok(file) => file,
         Err(e) => {
