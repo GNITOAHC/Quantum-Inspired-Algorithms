@@ -70,7 +70,6 @@ fn main() {
     };
 
     args::get_jxx(&mut jxx, options);
-    println!("{:#?}", jxx);
 
     if jxx.gamma == 0.0 || jxx.h == 1 {
         // If Gamma equals 0, height should be 1 (If height is 1, Gamma should be 0)
@@ -78,6 +77,7 @@ fn main() {
         jxx.jl = 0.0;
         jxx.h = 1;
     }
+    println!("{:#?}", jxx);
 
     create_vector(&jxx);
     if use_random {

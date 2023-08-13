@@ -45,14 +45,6 @@ fn get_front(i: i32, h: i32, jxx: &Jxx, without_cycle: bool) -> Vec<(f64, Vec<i3
             (btm_right_idx, btm_right_j, Direction::BtmRight),
         ];
 
-        // Drop the variables
-        drop(right_idx);
-        drop(right_j);
-        drop(bottom_idx);
-        drop(bottom_j);
-        drop(btm_right_idx);
-        drop(btm_right_j);
-
         for iter in iter_vec {
             let (iter_idx, iter_j, direction) = iter;
 
