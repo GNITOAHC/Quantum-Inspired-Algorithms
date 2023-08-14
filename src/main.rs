@@ -31,6 +31,9 @@ use hamiltonian::hamiltonian_eff; // Use the hamiltonian_eff function
 mod gamma_analysis; // Contains the analysis function
 use gamma_analysis::analysis; // Use the analysis function
 
+mod guidance_config; // Contains the use_guidance function
+use guidance_config::use_guidance; // Use the use_guidance function
+
 mod args; // Contains the Options struct
 
 /* 3D Triangular Lattice
@@ -49,6 +52,16 @@ fn main() {
     match &options.file_path {
         Some(file_path) => {
             analysis(file_path.clone());
+            return;
+        }
+        None => {}
+    }
+
+    // Check if arguments are for generting guidance config file
+    // args ex: ["target/debug/fujitsu", "--guidance-config", "target/Gamma0.0/Strength1.0_Lattice12_12_1_Time10.json"]
+    match &options.guidance_path {
+        Some(guidance_path) => {
+            use_guidance(guidance_path.clone());
             return;
         }
         None => {}
@@ -166,7 +179,7 @@ fn write_request_format(fujitsu: &mut Value, time_limit_sec: Option<i32>) -> () 
     da3.insert("num_output_solution".to_string(), Value::from(1024));
 }
 
-fn write_json(file_path: &str, fujitsu: &Value) -> () {
+pub fn write_json(file_path: &str, fujitsu: &Value) -> () {
     let mut file = match File::create(file_path) {
         Ok(file) => file,
         Err(e) => {

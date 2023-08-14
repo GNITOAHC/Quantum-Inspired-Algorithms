@@ -31,6 +31,9 @@ pub struct Options {
     #[structopt(short = "g", long = "gamma-analysis")]
     /// Gamma analysis target file
     pub file_path: Option<String>,
+    #[structopt(long = "guidance-config")]
+    /// Use guidance config
+    pub guidance_path: Option<String>,
 }
 
 pub fn get_options() -> Options {
