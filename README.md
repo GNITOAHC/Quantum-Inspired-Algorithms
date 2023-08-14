@@ -29,19 +29,28 @@ $ . \target\debug\fujitsu.exe # Running on Windows
 
 ## Options
 
-```shell
-# Usage: target/debug/fujitsu [-J <J>] [-Gamma <Gamma>] [-L <L>] [-H <H>] [--use-random] [--debug-output] [--without-cycle] [--help]
-# J : Default strength for all pairs of x_i & x_j
-# Gamma: Gamma will be calculated to default strength between layers
-# L : Side length of this triangular lattice
-# H : Height of this triangular lattice
-# use-random : Use random strength between nodes
-# debug-output : Log the nodes info and contents of output.json
-# without-cycle : Generate triangular lattice without cycle
-# help: List the available arguments
+```groff
+USAGE:
+    fujitsu [FLAGS] [OPTIONS]
 
-$ cargo run -- -J 1 -Gamma 1 -H 2 -L 3 --debug-output
+FLAGS:
+    -d, --debug-output     Output debug information
+    -h, --help             Prints help information
+    -u, --use-random       Use random strength for each node
+    -V, --version          Prints version information
+    -w, --without-cycle    Without cycle
+
+OPTIONS:
+    -g, --gamma-analysis <file-path>         Gamma analysis target file
+    -G, --gamma <gamma>                      Gamma of the Hamiltonian
+        --guidance-config <guidance-path>    Use guidance config
+    -H, --height <h>                         Height of the triangular Lattice
+    -J, --J <j>                              J_{i,j} of x_i, x_j
+    -L, --length <l>                         Side length of the triangular Lattice
+    -T, --time <t>                           Time limit of the Fujitsu request
 ```
+
+Example: `cargo run -- --help`
 
 ## Calculation Concepts
 
@@ -87,7 +96,7 @@ sh api.sh --list # List all jobs
 > **IMPORTANT**  
 > Please run from `/api` directory
 
-## Config Usage
+## Config Usage (_deprecated_)
 
 Analysis the results retrieve from Fujitsu API. (File path `./config/`)
 
