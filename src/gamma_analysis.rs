@@ -116,8 +116,8 @@ pub fn analysis(file_path: String) {
     println!("skip count: {} ( c6 or order_p is 0.0, skip )", skip_count);
 
     assert_eq!(
-        analysis_data.len() * num_height as usize + skip_count,
-        configs.len() as usize
+        analysis_data.len() + skip_count,
+        configs.len() as usize * num_height as usize
     );
 
     let target_dir = format!("./target/Gamma{}", gamma);
@@ -156,9 +156,9 @@ fn calc_c6_order_p(config: &Value, length: i32, height: i32) -> Vec<(f64, f64, i
         index = index % (length * length);
         let remainder: i32 = ((index / length) + index) % 3;
 
-        if layer != 0 {
-            println!("layer: {}", layer);
-        }
+        // if layer != 0 {
+        //     println!("layer: {}", layer);
+        // }
 
         m_each_count[layer as usize][remainder as usize] += 1;
         if value.as_bool().unwrap() {
