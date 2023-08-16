@@ -57,6 +57,7 @@ pub fn use_guidance(guidance_path: String) {
                 "guidance_config".to_string(),
                 configs[random_config_index]["configuration"].clone(),
             );
+            crate::write_json("./target/input.json", &input);
             return;
         }
     }
