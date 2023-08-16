@@ -29,7 +29,7 @@ $ . \target\debug\fujitsu.exe # Running on Windows
 
 ## Options
 
-```groff
+```
 USAGE:
     fujitsu [FLAGS] [OPTIONS]
 
@@ -51,6 +51,47 @@ OPTIONS:
 ```
 
 Example: `cargo run -- --help`
+
+### Gamma Analysis format
+
+```rs
+/*
+* Config file structure
+* {
+*   "qubo_solution": {
+*       "progress": [{"energy": -1.44, "time": 0.252}],
+*       "result_status": true,
+*       "solutions": [
+*           {
+*               "configuration": {
+*                   "0": true,
+*                   "1": false,
+*                   ...
+*               },
+*               "energy": -144,
+*               "frequency": 1
+*           },
+*           ...
+*       ],
+*       "timing": {"solve_time": "10840", "total_elapsed_time": "11024"},
+*  },
+*  "status": "Done"
+* }
+*/
+```
+
+Config index is the index of solutions, i.e. `json["qubo_solution][solutions]`
+
+> c6 / order parameter / config index / layer / energy
+
+```shell
+$ head target/Gamma0.0/1.0_12_12_1.txt
+-0.8606409648666089     0.43889120273959936     0       0       -441
+0.157870698204492       0.27568759930275966     1       0       -441
+-0.9896054083329263     0.42673577367454896     2       0       -441
+-0.838877739417418      0.0067255927314236325   3       0       -441
+0.9845361435785488      0.05374303916577969     4       0       -441
+```
 
 ## Calculation Concepts
 
