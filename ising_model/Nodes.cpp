@@ -171,7 +171,6 @@ double Nodes::getHamiltonianDifference(const int count, ...) const {
 
 // Print the lattice
 void Nodes::printLattice(const Jxx& jxx) const {
-
     printf("%d layers in total\n---\n", jxx.h);
 
     // for (int i = 0; i < jxx.h; ++i) {}

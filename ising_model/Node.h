@@ -53,6 +53,9 @@ class Node {
     void setJBtmRight(const double j_btm_right);
     void setJLayerUp(const double j_layer_up);
 
+    // Manipulators
+    void flip();
+
     // Printers
     void printNode() const;
 };

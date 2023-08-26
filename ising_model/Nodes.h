@@ -8,7 +8,7 @@
 #include <vector>
 
 class Nodes {
-  private:
+  protected:
     std::vector<Node> nodes;
     Jxx jxx;
 

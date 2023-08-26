@@ -75,6 +75,17 @@ void Node::setJBtmRight(const double j_btm_right) { this->j_btm_right = j_btm_ri
 
 void Node::setJLayerUp(const double j_layer_up) { this->j_layer_up = j_layer_up; }
 
+// Manipulators
+
+void Node::flip() {
+    if (this->spin == UP) {
+        this->spin = DOWN;
+    } else {
+        this->spin = UP;
+    }
+    return;
+}
+
 // Printers
 
 void Node::printNode() const {

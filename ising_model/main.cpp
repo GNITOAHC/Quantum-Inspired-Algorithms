@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 
+#include "IsingModel.h"
 #include "Nodes.h"
 
 using namespace std;
@@ -16,6 +17,7 @@ using namespace std;
 
 // Define global constants
 const double E = std::exp(1.0);
+const int INIT_TEMP = 100000;
 
 inline double loge (double x) { return std::log(x) / std::log(E); }
 
@@ -23,11 +25,13 @@ void printUsage (const char *prog_name) { std::cout << "Usage: " << prog_name <<
 
 bool isValidJxx(Jxx& jxx); // Check if the given Jxx is valid
 
+// ./main J Gamma Length Height tau
+
 int main (int argc, char *argv[]) {
 
     Jxx jxx;
 
-    if (argc != 5) {
+    if (argc != 6) {
         printUsage(argv[0]);
         return -1;
     }
@@ -50,14 +54,11 @@ int main (int argc, char *argv[]) {
 
     printf("jl = %f\n", jxx.jl);
 
-    Nodes nodes(jxx);
+    IsingModel ising_model(jxx);
 
-    // Print the vector of NODES
-    nodes.printLattice(jxx);
-
-    std::cout << "Parameter length squared: " << nodes.getOrderParameterLengthSquared() << std::endl;
-    std::cout << "Hamiltonian energy: " << nodes.getHamiltonianEnergy() << std::endl;
-    std::cout << "Hamiltonian energy after flipping index 1: " << nodes.getHamiltonianEnergy() + nodes.getHamiltonianDifference(1, 1) << std::endl;
+    std::cout << "Parameter length squared: " << ising_model.getOrderParameterLengthSquared() << std::endl;
+    std::cout << "Hamiltonian energy: " << ising_model.getHamiltonianEnergy() << std::endl;
+    std::cout << "Hamiltonian energy: " << ising_model.annealing(INIT_TEMP, atoi(argv[5])) << endl;
 
     return 0;
 }
