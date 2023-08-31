@@ -108,14 +108,17 @@ double Nodes::getOrderParameterLengthSquared() const {
 double Nodes::getHamiltonianEnergy() const {
     double sum = 0.0;
     for (const auto& it : this->nodes) {
+
+        const double current_spin = (double)it.getSpin();
+
         // Get the strength between the current node and the right node
-        sum += it.getJRight() * it.getSpin() * this->nodes[it.getRight()].getSpin();
+        sum += it.getJRight() * current_spin * (double)this->nodes[it.getRight()].getSpin();
         // Get the strength between the current node and the bottom node
-        sum += it.getJBottom() * it.getSpin() * this->nodes[it.getBottom()].getSpin();
+        sum += it.getJBottom() * current_spin * (double)this->nodes[it.getBottom()].getSpin();
         // Get the strength between the current node and the bottom right node
-        sum += it.getJBtmRight() * it.getSpin() * this->nodes[it.getBtmRight()].getSpin();
+        sum += it.getJBtmRight() * current_spin * (double)this->nodes[it.getBtmRight()].getSpin();
         // Get the strength between the current node and the layer up node
-        sum += it.getJLayerUp() * it.getSpin() * this->nodes[it.getLayerUp()].getSpin();
+        sum -= it.getJLayerUp() * current_spin * (double)this->nodes[it.getLayerUp()].getSpin();
     }
     return sum;
 }
@@ -137,6 +140,7 @@ double Nodes::getHamiltonianDifference(const int count, ...) const {
     va_start(valist, count);
     for (int i = 0; i < count; ++i) {
         const int current_index = va_arg(valist, int);
+        const double current_spin = (double)this->nodes[current_index].getSpin();
         // A node will have 8 neighbors
 
         // neighbors stores the indices of the neighbors
@@ -144,23 +148,27 @@ double Nodes::getHamiltonianDifference(const int count, ...) const {
                                   this->nodes[current_index].getBottom(), this->nodes[current_index].getLayerUp() };
 
         // Get the strength between the current node and the right node
-        sum_to_modify -= this->nodes[current_index].getJRight() * this->nodes[current_index].getSpin() * this->nodes[neighbors[0]].getSpin();
+        sum_to_modify -= this->nodes[current_index].getJRight() * current_spin * (double)this->nodes[neighbors[0]].getSpin();
         // Get the strength between the current node and the bottom right node
-        sum_to_modify -= this->nodes[current_index].getJBtmRight() * this->nodes[current_index].getSpin() * this->nodes[neighbors[1]].getSpin();
+        sum_to_modify -= this->nodes[current_index].getJBtmRight() * current_spin * (double)this->nodes[neighbors[1]].getSpin();
         // Get the strength between the current node and the bottom node
-        sum_to_modify -= this->nodes[current_index].getJBottom() * this->nodes[current_index].getSpin() * this->nodes[neighbors[2]].getSpin();
+        sum_to_modify -= this->nodes[current_index].getJBottom() * current_spin * (double)this->nodes[neighbors[2]].getSpin();
         // Get the strength between the current node and the layer up node
-        sum_to_modify += this->nodes[current_index].getJLayerUp() * this->nodes[current_index].getSpin() * this->nodes[neighbors[3]].getSpin();
+        sum_to_modify += this->nodes[current_index].getJLayerUp() * current_spin * (double)this->nodes[neighbors[3]].getSpin();
 
         // 4 indeices from the other nodes
         // indices stores the indices of the nodes to modify
         const int indices[] = { get_left(current_index, jxx.l), get_up_left(current_index, jxx.l), get_up(current_index, jxx.l),
                                 get_layer_down(current_index, jxx.l, jxx.h) };
 
-        sum_to_modify -= this->nodes[indices[0]].getJRight();    // Get the energy from the left neighbor
-        sum_to_modify -= this->nodes[indices[1]].getJBtmRight(); // Get the energy from the up left neighbor
-        sum_to_modify -= this->nodes[indices[2]].getJBottom();   // Get the energy from the up neighbor
-        sum_to_modify += this->nodes[indices[3]].getJLayerUp();  // Get the energy from the down layer neighbor
+        // Get the energy from the left neighbor
+        sum_to_modify -= (double)this->nodes[indices[0]].getJRight() * current_spin * (double)this->nodes[indices[0]].getSpin();
+        // Get the energy from the up left neighbor
+        sum_to_modify -= (double)this->nodes[indices[1]].getJBtmRight() * current_spin * (double)this->nodes[indices[1]].getSpin();
+        // Get the energy from the up neighbor
+        sum_to_modify -= (double)this->nodes[indices[2]].getJBottom() * current_spin * (double)this->nodes[indices[2]].getSpin();
+        // Get the energy from the down layer neighbor
+        sum_to_modify += (double)this->nodes[indices[3]].getJLayerUp() * current_spin * (double)this->nodes[indices[2]].getSpin();
     }
     va_end(valist);
 

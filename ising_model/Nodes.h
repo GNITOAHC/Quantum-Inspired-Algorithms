@@ -55,20 +55,20 @@ inline int get_layer_up (const int h, const int i, const int j, const int length
 // Inline helper functions for Nodes::getHamiltonianDifference(const int count, ...) const;
 // i for index, l for length, h for height
 inline int get_left (const int i, const int l) {
-    const int _j = (GET_J(i, l) - 1) > 0 ? (GET_J(i, l) - 1) : (GET_J(i, l) - 1) + l;
+    const int _j = (GET_J(i, l) - 1) >= 0 ? (GET_J(i, l) - 1) : (GET_J(i, l) - 1) + l;
     return GET_H(i, l) * l * l + GET_I(i, l) * l + _j;
 }
 inline int get_up_left (const int i, const int l) {
-    const int _i = (GET_I(i, l) - 1) > 0 ? GET_I(i, l) - 1 : GET_I(i, l) - 1 + l;
-    const int _j = (GET_J(i, l) - 1) > 0 ? GET_J(i, l) - 1 : GET_J(i, l) - 1 + l;
+    const int _i = (GET_I(i, l) - 1) >= 0 ? GET_I(i, l) - 1 : GET_I(i, l) - 1 + l;
+    const int _j = (GET_J(i, l) - 1) >= 0 ? GET_J(i, l) - 1 : GET_J(i, l) - 1 + l;
     return GET_H(i, l) * l * l + _i * l + _j;
 }
 inline int get_up (const int i, const int l) {
-    const int _i = (GET_I(i, l) - 1) > 0 ? GET_I(i, l) - 1 : GET_I(i, l) - 1 + l;
+    const int _i = (GET_I(i, l) - 1) >= 0 ? GET_I(i, l) - 1 : GET_I(i, l) - 1 + l;
     return GET_H(i, l) * l * l + _i * l + GET_J(i, l);
 }
 inline int get_layer_down (const int i, const int l, const int h) {
-    const int _h = (GET_H(i, l) - 1) > 0 ? GET_H(i, l) - 1 : GET_H(i, l) - 1 + h;
+    const int _h = (GET_H(i, l) - 1) >= 0 ? GET_H(i, l) - 1 : GET_H(i, l) - 1 + h;
     return _h * l * l + GET_I(i, l) * l + GET_J(i, l);
 }
 

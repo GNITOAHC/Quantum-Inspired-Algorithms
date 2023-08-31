@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <functional>
+#include <random>
 
 // Constructor
 
@@ -11,9 +12,11 @@ IsingModel::IsingModel(const Jxx& jxx) : Nodes(jxx) { return; }
 
 // Randomly execute the given function with probability rand
 bool randomExec (const double rand, const std::function<void()> func) {
-    srand(time(NULL)); // Seed the random number generator
+    // Random number generator
+    std::mt19937 generator(std::random_device {}());
+    std::uniform_real_distribution<double> dis(0.0, 1.0);
 
-    if (std::rand() % 100000 < rand * 100000) {
+    if (dis(generator) < rand) {
         func();
         return true;
     }

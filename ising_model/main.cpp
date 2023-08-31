@@ -17,7 +17,7 @@ using namespace std;
 
 // Define global constants
 const double E = std::exp(1.0);
-const int INIT_TEMP = 100000;
+const int INIT_TEMP = 10;
 
 inline double loge (double x) { return std::log(x) / std::log(E); }
 
@@ -36,7 +36,7 @@ int main (int argc, char *argv[]) {
         return -1;
     }
 
-    // Parse command line arguments (J, Gamma, Length, Height)
+    // Parse command line arguments (J, Gamma, Length, Height, tau)
     jxx.j = atof(argv[1]);     // J
     jxx.gamma = atof(argv[2]); // Gamma
     jxx.l = atoi(argv[3]);     // Length
