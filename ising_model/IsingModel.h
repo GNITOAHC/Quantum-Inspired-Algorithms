@@ -12,6 +12,9 @@ class IsingModel : public Nodes {
 
     // Manipulator
     double annealing(const double& init, const double& tau);
+
+    // Printers
+    void printConfigurations(const int&) const;
 };
 
 #endif

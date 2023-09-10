@@ -40,3 +40,12 @@ double IsingModel::annealing(const double& init, const double& tau) {
 
     return this->getHamiltonianEnergy();
 }
+
+void IsingModel::printConfigurations(const int& group) const {
+    printf("Group index spin\n");
+    for (const auto& node : this->nodes) {
+        std::cout << group << " " << node.getIndex() << " " << node.getSpin() << std::endl;
+    }
+    std::cout << std::endl;
+    return;
+}

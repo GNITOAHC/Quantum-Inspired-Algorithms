@@ -52,13 +52,12 @@ int main (int argc, char *argv[]) {
         return -1;
     } catch (...) {}
 
-    printf("jl = %f\n", jxx.jl);
-
     IsingModel ising_model(jxx);
 
     std::cout << "Parameter length squared: " << ising_model.getOrderParameterLengthSquared() << std::endl;
     std::cout << "Hamiltonian energy: " << ising_model.getHamiltonianEnergy() << std::endl;
     std::cout << "Hamiltonian energy: " << ising_model.annealing(INIT_TEMP, atoi(argv[5])) << endl;
+    ising_model.printConfigurations(0);
 
     return 0;
 }
