@@ -1,10 +1,12 @@
 #ifndef _NODES_H_
 #define _NODES_H_
 
+#include "Direction.h"
 #include "Jxx.h"
 #include "Node.h"
 
 #include <iostream>
+#include <map>
 #include <vector>
 
 class Nodes {
@@ -19,6 +21,7 @@ class Nodes {
     Nodes(const std::vector<Node>& nodes);
 
     // Manipulators
+    void configNodes(const std::map<std::pair<int, int>, std::pair<Direction, double> >&); // Modify the nodes according to the given map
     void pushBack(const Node& node);
 
     // Accessors

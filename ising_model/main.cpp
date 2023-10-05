@@ -5,8 +5,6 @@
 #include "IsingModel.h"
 #include "Nodes.h"
 
-using namespace std;
-
 /*
  * function -> camalCase
  * variable -> snake_case
@@ -23,47 +21,56 @@ inline double loge (double x) { return std::log(x) / std::log(E); }
 
 void printUsage (const char *prog_name) { std::cout << "Usage: " << prog_name << " J Gamma Length Height" << std::endl; }
 
-bool isValidJxx(Jxx& jxx); // Check if the given Jxx is valid
+bool isValidJxx(const Jxx& jxx);                                                   // Check if the given Jxx is valid
+std::tuple<bool, Direction> prune(const int&, const int&, const int&, const int&); // Prune the lattice
 
-// ./main J Gamma Length Height tau
+// Parse input from stdin and return a tuple of Jxx and lattice
+std::tuple<Jxx, std::map<std::pair<int, int>, std::pair<Direction, double> >, int> parseInput();
 
+// ./main < 1.in
 int main (int argc, char *argv[]) {
-
-    Jxx jxx;
-
-    if (argc != 6) {
-        printUsage(argv[0]);
-        return -1;
-    }
-
-    // Parse command line arguments (J, Gamma, Length, Height, tau)
-    jxx.j = atof(argv[1]);     // J
-    jxx.gamma = atof(argv[2]); // Gamma
-    jxx.l = atoi(argv[3]);     // Length
-    jxx.h = atoi(argv[4]);     // Height
-
-    jxx.jl = (-0.5) * loge(tanh(jxx.gamma));
-
-    // Check if the given Jxx is valid
-    try {
-        isValidJxx(jxx);
-    } catch (std::invalid_argument& e) {
-        std::cout << e.what() << std::endl;
-        return -1;
-    } catch (...) {}
+    const auto [jxx, lattice_config, tau] = parseInput();
 
     IsingModel ising_model(jxx);
+    ising_model.configNodes(lattice_config);
 
     std::cout << "Parameter length squared: " << ising_model.getOrderParameterLengthSquared() << std::endl;
     std::cout << "Hamiltonian energy: " << ising_model.getHamiltonianEnergy() << std::endl;
-    std::cout << "Hamiltonian energy: " << ising_model.annealing(INIT_TEMP, atoi(argv[5])) << endl;
+    std::cout << "Hamiltonian energy: " << ising_model.annealing(INIT_TEMP, tau) << std::endl;
     ising_model.printConfigurations(0);
 
     return 0;
 }
 
+// Parse input from stdin and return a tuple of Jxx and lattice
+std::tuple<Jxx, std::map<std::pair<int, int>, std::pair<Direction, double> >, int> parseInput () {
+    double j, gamma, tau;
+    int length, height;
+    std::cin >> j >> gamma >> length >> height >> tau;
+    Jxx jxx = { j, gamma, length, height, gamma == 0 ? 0.0 : (-0.5) * loge(tanh(gamma)) };
+    try {
+        isValidJxx(jxx);
+    } catch (std::invalid_argument& e) {
+        std::cout << e.what() << std::endl;
+        exit(-1);
+    } catch (...) {}
+
+    int count = 0;
+    std::cin >> count;
+    std::map<std::pair<int, int>, std::pair<Direction, double> > lattice;
+    for (int i = 0; i < count; ++i) {
+        double co;
+        int po1, po2;
+        std::cin >> co >> po1 >> po2;
+        auto [pruned, direction] = prune(po1, po2, length, height);
+        if (pruned) continue;
+        else { lattice[po1 < po2 ? std::make_pair(po1, po2) : std::make_pair(po2, po1)] = std::make_pair(direction, co); }
+    }
+    return { jxx, lattice, tau };
+}
+
 // Check if the given Jxx is valid
-bool isValidJxx (Jxx& jxx) {
+bool isValidJxx (const Jxx& jxx) {
     // Check if jxx.j, jxx.gamma, jxx.l, jxx.h are smaller than 0
     if (jxx.j < 0.0 || jxx.gamma < 0.0 || jxx.l < 0 || jxx.h < 0) {
         throw std::invalid_argument("All arguments must be positive");
@@ -88,8 +95,23 @@ bool isValidJxx (Jxx& jxx) {
         return false;
     }
 
-    // Override jxx.jl if gamma is 0.0
-    if (jxx.gamma == 0.0) { jxx.jl = 0.0; }
-
     return true;
+}
+
+// Check if the given lattice needs to be pruned
+std::tuple<bool, Direction> prune (const int& a, const int& b, const int& length, const int& height) {
+    // true for prune, false for not prune
+    if (a == b) return { true, NIL };
+    const int h = GET_H(a, length), i = GET_I(a, length), j = GET_J(a, length);
+    const bool x[8] = { b == get_right(h, i, j, length),
+                        b == get_bottom(h, i, j, length),
+                        b == get_bottom_right(h, i, j, length),
+                        b == get_layer_up(h, i, j, length, height),
+                        b == get_left(a, length),
+                        b == get_up_left(a, length),
+                        b == get_up(a, length),
+                        b == get_layer_down(a, length, length) };
+    for (int i = 0; i < 8; ++i)
+        if (x[i]) return { false, static_cast<Direction>(i) };
+    return { true, NIL };
 }

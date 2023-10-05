@@ -51,6 +51,25 @@ Nodes::Nodes(const std::vector<Node>& nodes) : nodes(nodes) { return; }
 
 // Manipulators
 
+void Nodes::configNodes(const std::map<std::pair<int, int>, std::pair<Direction, double> >& map) {
+    // Modify the node according to the given map
+    for (const auto& it : map) {
+        auto [index, pair] = it;
+        switch (pair.first) {
+            case RIGHT: this->nodes[index.first].setJRight(pair.second); break;
+            case BOTTOM: this->nodes[index.first].setJBottom(pair.second); break;
+            case BOTTOM_RIGHT: this->nodes[index.first].setJBtmRight(pair.second); break;
+            case LAYER_UP: this->nodes[index.first].setJLayerUp(pair.second); break;
+            case LEFT: this->nodes[index.second].setJRight(pair.second); break;
+            case UP_LEFT: this->nodes[index.second].setJBtmRight(pair.second); break;
+            case TOP: this->nodes[index.second].setJBottom(pair.second); break;
+            case LAYER_DOWN: this->nodes[index.second].setJLayerUp(pair.second); break;
+            default: throw std::exception();
+        }
+    }
+    return;
+}
+
 void Nodes::pushBack(const Node& node) { nodes.push_back(node); }
 
 // Accessors

@@ -14,7 +14,7 @@ $(TARGET): main.o Jxx.h Nodes.o Node.o IsingModel.o
 main.o: main.cpp Nodes.h IsingModel.h
 	$(CC) $(CFLAGS) -c main.cpp
 
-Nodes.o: Nodes.cpp Nodes.h Node.h Jxx.h
+Nodes.o: Nodes.cpp Nodes.h Node.h Jxx.h Direction.h
 	$(CC) $(CFLAGS) -c Nodes.cpp
 
 Node.o: Node.cpp Node.h Jxx.h SubLattice.h Spin.h
