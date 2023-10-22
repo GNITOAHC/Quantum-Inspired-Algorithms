@@ -15,6 +15,7 @@ class IsingModel : public Nodes {
 
     // Printers
     void printConfigurations(const int&) const;
+    void printLattice() const;
 };
 
 #endif

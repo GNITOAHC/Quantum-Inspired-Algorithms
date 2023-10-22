@@ -1,6 +1,5 @@
 #include <cmath>
 #include <iostream>
-#include <vector>
 
 #include "IsingModel.h"
 #include "Nodes.h"
@@ -34,10 +33,12 @@ int main (int argc, char *argv[]) {
     IsingModel ising_model(jxx);
     ising_model.configNodes(lattice_config);
 
-    std::cout << "Parameter length squared: " << ising_model.getOrderParameterLengthSquared() << std::endl;
+    // std::cout << "Parameter length squared: " << ising_model.getOrderParameterLengthSquared() << std::endl;
     std::cout << "Hamiltonian energy: " << ising_model.getHamiltonianEnergy() << std::endl;
     std::cout << "Hamiltonian energy: " << ising_model.annealing(INIT_TEMP, tau) << std::endl;
-    ising_model.printConfigurations(0);
+    std::cout << "Parameter length squared: " << ising_model.getOrderParameterLengthSquared() << std::endl;
+    // ising_model.printConfigurations(0);
+    // ising_model.printLattice();
 
     return 0;
 }

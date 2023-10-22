@@ -49,3 +49,13 @@ void IsingModel::printConfigurations(const int& group) const {
     std::cout << std::endl;
     return;
 }
+
+void IsingModel::printLattice() const {
+    printf("index index energy\n");
+    for (const auto& node : this->nodes) {
+        std::cout << node.getIndex() << " " << node.getRight() << " " << node.getJRight() << std::endl;
+        std::cout << node.getIndex() << " " << node.getBottom() << " " << node.getJBottom() << std::endl;
+        std::cout << node.getIndex() << " " << node.getBtmRight() << " " << node.getJBtmRight() << std::endl;
+        std::cout << node.getIndex() << " " << node.getLayerUp() << " " << node.getJLayerUp() << std::endl;
+    }
+}
