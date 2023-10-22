@@ -92,9 +92,9 @@ double Nodes::getOrderParameterLengthSquared() const {
     for (const auto& it : this->nodes) {
         const int layer = it.getIndex() / (length * length);
         switch (it.getSubLattice()) {
-            case BLUE: m_color_params[layer][0] += 1; break;
-            case BLACK: m_color_params[layer][1] += 1; break;
-            case RED: m_color_params[layer][2] += 1; break;
+            case BLUE: m_color_params[layer][0] += (double)it.getSpin(); break;
+            case BLACK: m_color_params[layer][1] += (double)it.getSpin(); break;
+            case RED: m_color_params[layer][2] += (double)it.getSpin(); break;
             default: throw std::exception();
         }
     }
