@@ -1,3 +1,3 @@
 make clean
 make
-./main < 1.in
+./main < sample.in
