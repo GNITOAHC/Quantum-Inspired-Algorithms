@@ -80,7 +80,7 @@ Example: `cargo run -- --help`
 */
 ```
 
-Config index is the index of solutions, i.e. `json["qubo_solution][solutions]`
+Config index is the index of solutions, i.e. `json["qubo_solution"]["solutions"]`
 
 > c6 / order parameter / config index / layer / energy
 
